@@ -24,8 +24,6 @@ jobs:
       - name: Detect Pages configuration
         id: pages
         uses: actions/configure-pages@v5
-        with:
-          static_site_generator: next
 
       - name: Setup Node
         uses: actions/setup-node@v4
