@@ -1,79 +1,207 @@
+"use client";
+
+import { useState } from "react";
 import { DesignCard as DesignCardType } from "@/lib/data";
 
 const tagColors: Record<string, string> = {
-  accent: "bg-accent-light text-accent",
-  purple: "bg-purple-light text-purple",
-  green: "bg-green-light text-green",
-  yellow: "bg-yellow-light text-yellow",
+  accent: "bg-accent-light text-accent border-accent/25",
+  purple: "bg-purple-light text-purple border-purple/25",
+  green: "bg-green-light text-green border-green/25",
+  yellow: "bg-yellow-light text-yellow border-yellow/25",
 };
 
 interface DesignCardProps {
   card: DesignCardType;
+  onSelectCard?: (card: DesignCardType) => void;
 }
 
-export default function DesignCard({ card }: DesignCardProps) {
+export default function DesignCard({ card, onSelectCard }: DesignCardProps) {
+  const [liked, setLiked] = useState(false);
+  const isWide = card.featuredSpan === "wide";
+
   return (
-    <article className="flex flex-col bg-white rounded-2xl border border-[#EFEFEF] overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-shadow">
-      {/* Image placeholder */}
+    <article
+      role="button"
+      tabIndex={0}
+      aria-label={`查看展品 ${card.title} 详情`}
+      onClick={() => onSelectCard?.(card)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelectCard?.(card);
+        }
+      }}
+      className={`group flex flex-col bg-surface rounded-2xl border border-border overflow-hidden shadow-[0_4px_18px_rgba(20,19,18,0.04)] hover:shadow-[0_18px_42px_rgba(20,19,18,0.12)] hover:border-dark/40 transition-all duration-300 cursor-pointer focus-visible:outline-2 focus-visible:outline-accent ${
+        isWide ? "lg:col-span-2" : ""
+      }`}
+    >
+      {/* Top Archival Placard Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-bg-light/75 text-[10px] font-mono-meta text-muted">
+        <div className="flex items-center gap-2">
+          <span className="text-accent font-semibold">◆</span>
+          <span className="text-dark font-medium">{card.catalogNo}</span>
+          {isWide && (
+            <span className="px-2 py-0.5 rounded bg-accent-light text-accent border border-accent/25 text-[9px]">
+              CURATORIAL FEATURE · 重点展品
+            </span>
+          )}
+        </div>
+        <span>
+          {card.medium} · {card.year}
+        </span>
+      </div>
+
+      {/* Artistic Generative Canvas */}
       <div
-        className={`w-full h-[260px] bg-gradient-to-br ${card.image} flex items-center justify-center`}
+        className={`relative w-full ${
+          isWide ? "h-[270px] sm:h-[290px]" : "h-[245px]"
+        } bg-gradient-to-br ${card.image} flex items-center justify-center overflow-hidden p-6`}
       >
-        <div className="w-16 h-16 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <path d="M21 15l-5-5L5 21" />
-          </svg>
+        {/* Inner gallery mat border & corner crosshairs */}
+        <div className="absolute inset-3.5 border border-white/20 rounded-xl pointer-events-none" />
+        <span className="absolute top-5 left-5 text-[9px] font-mono-meta text-white/45 pointer-events-none">
+          FIG. {card.id.padStart(2, "0")}
+        </span>
+        <span className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-mono-meta uppercase px-2.5 py-1 rounded-full bg-black/50 text-white border border-white/20 backdrop-blur-md">
+          OPEN DOSSIER · 开启画廊灯箱 ↗
+        </span>
+
+        <ArtMotifGraphic motif={card.artMotif} />
+
+        <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between text-[10px] font-mono-meta uppercase tracking-widest text-white/75 pointer-events-none">
+          <span>MOTIF // {card.artMotif}</span>
+          <span>{card.author}</span>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex flex-col gap-2 p-3.5">
-        <h3 className="text-[15px] font-semibold text-dark">{card.title}</h3>
-        <p className="text-xs text-muted">{card.author}</p>
-
-        {/* Tags */}
-        <div className="flex gap-1.5">
-          {card.tags.map((tag) => (
-            <span
-              key={tag.label}
-              className={`inline-flex items-center h-[22px] px-1.5 rounded text-[11px] font-medium ${tagColors[tag.color]}`}
-            >
-              {tag.label}
-            </span>
-          ))}
+      {/* Editorial Plaque Content */}
+      <div className="flex flex-col gap-3 p-6 flex-1 justify-between">
+        <div className="space-y-2">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="font-editorial text-xl sm:text-[22px] font-bold text-dark group-hover:text-accent transition-colors leading-snug">
+              {card.title}
+            </h3>
+          </div>
+          <p className="text-xs sm:text-[13px] text-secondary leading-[1.7]">
+            {card.subtitle}
+          </p>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-4 mt-1">
-          <span className="inline-flex items-center gap-1 text-xs text-muted">
-            <HeartIcon />
-            {card.likes}
-          </span>
-          <span className="inline-flex items-center gap-1 text-xs text-muted">
-            <EyeIcon />
-            {card.views}
-          </span>
+        <div className="pt-4 mt-2 border-t border-border/80 flex items-center justify-between gap-2">
+          {/* Tags */}
+          <div className="flex flex-wrap gap-1.5">
+            {card.tags.map((tag) => (
+              <span
+                key={tag.label}
+                className={`inline-flex items-center h-[23px] px-2.5 rounded-full text-[11px] font-medium border ${tagColors[tag.color]}`}
+              >
+                #{tag.label}
+              </span>
+            ))}
+          </div>
+
+          {/* Stats */}
+          <div className="flex items-center gap-3.5 shrink-0">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLiked((prev) => !prev);
+              }}
+              className={`inline-flex items-center gap-1 text-xs font-mono-meta transition-colors cursor-pointer ${
+                liked ? "text-accent font-semibold" : "text-muted hover:text-dark"
+              }`}
+              aria-label={`收藏 ${card.title}`}
+            >
+              <HeartIcon filled={liked} />
+              {liked ? `${card.likes}+` : card.likes}
+            </button>
+            <span className="inline-flex items-center gap-1 text-xs font-mono-meta text-muted">
+              <EyeIcon />
+              {card.views}
+            </span>
+          </div>
         </div>
       </div>
     </article>
   );
 }
 
-function HeartIcon() {
+export function ArtMotifGraphic({
+  motif,
+}: {
+  motif: DesignCardType["artMotif"];
+}) {
+  switch (motif) {
+    case "bauhaus":
+      return (
+        <svg viewBox="0 0 220 140" className="w-52 h-36 group-hover:scale-105 transition-transform duration-700" fill="none">
+          <line x1="10" y1="70" x2="210" y2="70" stroke="rgba(255,255,255,0.2)" strokeDasharray="3 3" />
+          <circle cx="80" cy="70" r="46" stroke="rgba(255,255,255,0.88)" strokeWidth="1.5" />
+          <circle cx="80" cy="70" r="22" stroke="rgba(255,255,255,0.45)" strokeWidth="1" />
+          <rect x="96" y="32" width="72" height="72" stroke="rgba(255,255,255,0.72)" strokeWidth="1.5" />
+          <line x1="30" y1="118" x2="188" y2="22" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2" />
+          <circle cx="132" cy="68" r="7" fill="rgba(255,255,255,0.92)" />
+        </svg>
+      );
+    case "orbital":
+      return (
+        <svg viewBox="0 0 220 140" className="w-52 h-36 group-hover:scale-105 transition-transform duration-700" fill="none">
+          <ellipse cx="110" cy="70" rx="80" ry="32" transform="rotate(-18 110 70)" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5" />
+          <ellipse cx="110" cy="70" rx="80" ry="32" transform="rotate(24 110 70)" stroke="rgba(255,255,255,0.45)" strokeWidth="1.2" />
+          <circle cx="110" cy="70" r="38" stroke="rgba(255,255,255,0.25)" strokeDasharray="2 3" />
+          <circle cx="110" cy="70" r="16" stroke="rgba(255,255,255,0.92)" strokeWidth="1.5" />
+          <circle cx="162" cy="50" r="4.5" fill="white" />
+          <circle cx="62" cy="88" r="3.5" fill="rgba(255,255,255,0.75)" />
+        </svg>
+      );
+    case "editorial":
+      return (
+        <svg viewBox="0 0 220 140" className="w-52 h-36 group-hover:scale-105 transition-transform duration-700" fill="none">
+          <rect x="38" y="20" width="144" height="100" rx="4" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5" />
+          <line x1="38" y1="46" x2="182" y2="46" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" />
+          <line x1="90" y1="46" x2="90" y2="120" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" />
+          <line x1="50" y1="64" x2="78" y2="64" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2" />
+          <line x1="50" y1="78" x2="74" y2="78" stroke="rgba(255,255,255,0.35)" strokeWidth="1.2" />
+          <circle cx="136" cy="83" r="20" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" />
+        </svg>
+      );
+    case "prism":
+      return (
+        <svg viewBox="0 0 220 140" className="w-52 h-36 group-hover:scale-105 transition-transform duration-700" fill="none">
+          <circle cx="110" cy="74" r="52" stroke="rgba(255,255,255,0.22)" strokeDasharray="3 3" />
+          <polygon points="110,18 170,116 50,116" stroke="rgba(255,255,255,0.88)" strokeWidth="1.5" />
+          <polygon points="110,38 150,106 70,106" stroke="rgba(255,255,255,0.48)" strokeWidth="1.2" />
+          <line x1="110" y1="18" x2="110" y2="116" stroke="rgba(255,255,255,0.45)" strokeDasharray="3 3" />
+        </svg>
+      );
+    case "kinetic":
+      return (
+        <svg viewBox="0 0 220 140" className="w-52 h-36 group-hover:scale-105 transition-transform duration-700" fill="none">
+          <path d="M20 88 Q 65 16, 110 68 T 200 46" stroke="rgba(255,255,255,0.92)" strokeWidth="2" />
+          <path d="M20 104 Q 65 32, 110 84 T 200 62" stroke="rgba(255,255,255,0.5)" strokeWidth="1.3" />
+          <path d="M20 118 Q 65 48, 110 98 T 200 78" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+          <circle cx="110" cy="68" r="5.5" fill="white" />
+        </svg>
+      );
+    default:
+      return (
+        <svg viewBox="0 0 220 140" className="w-52 h-36 group-hover:scale-105 transition-transform duration-700" fill="none">
+          <circle cx="110" cy="70" r="52" stroke="rgba(255,255,255,0.3)" strokeWidth="1.2" />
+          <circle cx="110" cy="70" r="36" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2" />
+          <circle cx="110" cy="70" r="20" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" />
+          <line x1="40" y1="70" x2="180" y2="70" stroke="rgba(255,255,255,0.3)" strokeDasharray="2 2" />
+        </svg>
+      );
+  }
+}
+
+function HeartIcon({ filled }: { filled?: boolean }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill={filled ? "currentColor" : "none"}>
       <path
         d="M7 12L1.5 6.5C0.5 5.5 0.5 3.5 1.5 2.5C2.5 1.5 4 1.5 5 2.5L7 4.5L9 2.5C10 1.5 11.5 1.5 12.5 2.5C13.5 3.5 13.5 5.5 12.5 6.5L7 12Z"
-        stroke="#999"
+        stroke="currentColor"
         strokeWidth="1.2"
         strokeLinejoin="round"
       />
@@ -84,10 +212,10 @@ function HeartIcon() {
 function EyeIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <circle cx="7" cy="7" r="2.5" stroke="#999" strokeWidth="1.2" />
+      <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.2" />
       <path
         d="M1 7C2.5 3.5 5 1.5 7 1.5C9 1.5 11.5 3.5 13 7C11.5 10.5 9 12.5 7 12.5C5 12.5 2.5 10.5 1 7Z"
-        stroke="#999"
+        stroke="currentColor"
         strokeWidth="1.2"
       />
     </svg>
