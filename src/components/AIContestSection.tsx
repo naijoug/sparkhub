@@ -1,4 +1,6 @@
-import { aiContestCards } from "@/lib/data";
+"use client";
+
+import { aiContestCards, AIContestCard } from "@/lib/data";
 
 const badgeColors: Record<string, string> = {
   purple: "bg-purple text-white border-white/25",
@@ -9,10 +11,18 @@ const badgeColors: Record<string, string> = {
 
 interface AIContestSectionProps {
   searchQuery?: string;
+  onSelectTag?: (tag: string) => void;
+  likedIds?: string[];
+  onToggleLike?: (id: string) => void;
+  onInspectDossier?: (item: AIContestCard) => void;
 }
 
 export default function AIContestSection({
   searchQuery = "",
+  onSelectTag,
+  likedIds = [],
+  onToggleLike,
+  onInspectDossier,
 }: AIContestSectionProps) {
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -22,7 +32,8 @@ export default function AIContestSection({
       card.title.toLowerCase().includes(normalizedQuery) ||
       card.curatorNote.toLowerCase().includes(normalizedQuery) ||
       card.meta.toLowerCase().includes(normalizedQuery) ||
-      card.badge.toLowerCase().includes(normalizedQuery)
+      card.badge.toLowerCase().includes(normalizedQuery) ||
+      (card.tags && card.tags.some((t) => t.toLowerCase().includes(normalizedQuery)))
   );
 
   return (
@@ -66,74 +77,121 @@ export default function AIContestSection({
             暂无匹配“{searchQuery}”的生成式艺术佳作。
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredCards.map((card, idx) => (
-              <a
-                key={card.id}
-                href={card.href ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col bg-[#1E1C1A] rounded-2xl overflow-hidden border border-white/12 hover:border-white/35 shadow-[0_8px_28px_rgba(0,0,0,0.35)] hover:-translate-y-1 transition-all duration-300"
-              >
-                {/* Luminous Latent-Space Plate */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCards.map((card, idx) => {
+              const isLiked = likedIds.includes(card.id);
+
+              return (
                 <div
-                  className={`relative w-full h-[200px] bg-gradient-to-br ${card.image} flex flex-col justify-between p-5 overflow-hidden`}
+                  key={card.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onInspectDossier?.(card)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onInspectDossier?.(card);
+                    }
+                  }}
+                  className="group flex flex-col bg-[#1E1C1A] rounded-2xl overflow-hidden border border-white/12 hover:border-white/35 shadow-[0_8px_28px_rgba(0,0,0,0.35)] hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
                 >
-                  <div className="absolute inset-3 border border-white/20 rounded-xl pointer-events-none" />
-
-                  {/* Generative wave / mesh overlay */}
-                  <svg
-                    viewBox="0 0 180 120"
-                    className="absolute inset-0 w-full h-full opacity-40 group-hover:scale-110 transition-transform duration-700 pointer-events-none"
-                    fill="none"
+                  {/* Luminous Latent-Space Plate */}
+                  <div
+                    className={`relative w-full h-[200px] bg-gradient-to-br ${card.image} flex flex-col justify-between p-5 overflow-hidden`}
                   >
-                    <ellipse
-                      cx="90"
-                      cy="60"
-                      rx="65"
-                      ry="24"
-                      transform={`rotate(${20 - idx * 12} 90 60)`}
-                      stroke="white"
-                      strokeWidth="1.1"
-                    />
-                    <ellipse
-                      cx="90"
-                      cy="60"
-                      rx="65"
-                      ry="24"
-                      transform={`rotate(${-25 + idx * 10} 90 60)`}
-                      stroke="white"
-                      strokeWidth="0.8"
-                      strokeDasharray="2 3"
-                    />
-                    <circle cx="90" cy="60" r="14" stroke="white" strokeWidth="1.2" />
-                  </svg>
+                    <div className="absolute inset-3 border border-white/20 rounded-xl pointer-events-none" />
 
-                  <div className="relative z-10 flex items-center justify-between text-[10px] font-mono-meta text-white/80">
-                    <span>{card.catalogNo}</span>
-                    <span>SYNTHESIS ↗</span>
+                    {/* Generative wave / mesh overlay */}
+                    <svg
+                      viewBox="0 0 180 120"
+                      className="absolute inset-0 w-full h-full opacity-40 group-hover:scale-110 transition-transform duration-700 pointer-events-none"
+                      fill="none"
+                    >
+                      <ellipse
+                        cx="90"
+                        cy="60"
+                        rx="65"
+                        ry="24"
+                        transform={`rotate(${20 - idx * 12} 90 60)`}
+                        stroke="white"
+                        strokeWidth="1.1"
+                      />
+                      <ellipse
+                        cx="90"
+                        cy="60"
+                        rx="65"
+                        ry="24"
+                        transform={`rotate(${-25 + idx * 10} 90 60)`}
+                        stroke="white"
+                        strokeWidth="0.8"
+                        strokeDasharray="2 3"
+                      />
+                      <circle cx="90" cy="60" r="14" stroke="white" strokeWidth="1.2" />
+                    </svg>
+
+                    <div className="relative z-10 flex items-center justify-between text-[10px] font-mono-meta text-white/80">
+                      <span>{card.catalogNo}</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleLike?.(card.id);
+                          }}
+                          className={`p-1 rounded-full text-xs transition-colors cursor-pointer ${
+                            isLiked
+                              ? "bg-accent text-white"
+                              : "bg-black/50 text-white/80 hover:bg-black/80 hover:text-white"
+                          }`}
+                          aria-label={`收藏 ${card.title}`}
+                        >
+                          {isLiked ? "♥" : "♡"}
+                        </button>
+                        <span>DOSSIER ↗</span>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`relative z-10 self-start inline-flex items-center h-6 px-3 rounded-full text-[11px] font-semibold border ${badgeColors[card.badgeColor]}`}
+                    >
+                      ◈ {card.badge}
+                    </span>
                   </div>
-                  <span
-                    className={`relative z-10 self-start inline-flex items-center h-6 px-3 rounded-full text-[11px] font-semibold border ${badgeColors[card.badgeColor]}`}
-                  >
-                    ◈ {card.badge}
-                  </span>
-                </div>
 
-                {/* Dark Gallery Placard Content */}
-                <div className="flex flex-col gap-2.5 p-5 flex-1">
-                  <h3 className="font-editorial text-lg font-bold text-[#F6F2E9] group-hover:text-accent-light transition-colors leading-snug">
-                    {card.title}
-                  </h3>
-                  <p className="text-xs text-white/70 leading-[1.7]">
-                    {card.curatorNote}
-                  </p>
-                  <p className="text-[10px] font-mono-meta text-white/45 mt-auto pt-3 border-t border-white/10">
-                    {card.meta}
-                  </p>
+                  {/* Dark Gallery Placard Content */}
+                  <div className="flex flex-col gap-2.5 p-5 flex-1">
+                    <h3 className="font-editorial text-lg font-bold text-[#F6F2E9] group-hover:text-accent-light transition-colors leading-snug">
+                      {card.title}
+                    </h3>
+                    <p className="text-xs text-white/70 leading-[1.7]">
+                      {card.curatorNote}
+                    </p>
+
+                    {card.tags && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {card.tags.map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectTag?.(tag);
+                            }}
+                            className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-white/10 text-white/75 hover:bg-white hover:text-dark transition-colors cursor-pointer"
+                          >
+                            #{tag}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <p className="text-[10px] font-mono-meta text-white/45 mt-auto pt-3 border-t border-white/10">
+                      {card.meta}
+                    </p>
+                  </div>
                 </div>
-              </a>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

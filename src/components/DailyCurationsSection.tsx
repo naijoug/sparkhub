@@ -37,10 +37,18 @@ const accentStripe: Record<DailyCurationItem["accent"], string> = {
 
 interface DailyCurationsSectionProps {
   searchQuery?: string;
+  onSelectTag?: (tag: string) => void;
+  likedIds?: string[];
+  onToggleLike?: (id: string) => void;
+  onInspectDossier?: (item: DailyCurationItem) => void;
 }
 
 export default function DailyCurationsSection({
   searchQuery = "",
+  onSelectTag,
+  likedIds = [],
+  onToggleLike,
+  onInspectDossier,
 }: DailyCurationsSectionProps) {
   const [selectedTab, setSelectedTab] = useState<CurationCategory>("all");
 
@@ -82,8 +90,8 @@ export default function DailyCurationsSection({
                 Dispatches from the Web
               </span>
             </h2>
-            <p className="text-sm text-secondary max-w-[680px] leading-relaxed">
-              每日从 Product Hunt、Awwwards、Luma、ETHGlobal 与 Cosmos 采撷具有审美张力的实验器物、跨界聚落、独立网站与思想手记。
+            <p className="text-sm text-secondary max-w-[720px] leading-relaxed">
+              每日从 Product Hunt、Awwwards、Luma、ETHGlobal、21st.dev 与 Cosmos 采撷具有审美张力的实验器物、设计工程范本、跨界聚落与微交互手记。
             </p>
           </div>
 
@@ -129,13 +137,21 @@ export default function DailyCurationsSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8">
             {filteredItems.map((item, idx) => {
               const folioNumber = String(idx + 1).padStart(2, "0");
+              const isLiked = likedIds.includes(item.id);
+
               return (
-                <a
+                <div
                   key={item.id}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`group relative flex flex-col justify-between bg-surface rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_36px_rgba(20,19,18,0.08)] ${accentBorderHover[item.accent]}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onInspectDossier?.(item)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onInspectDossier?.(item);
+                    }
+                  }}
+                  className={`group relative flex flex-col justify-between bg-surface rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_36px_rgba(20,19,18,0.08)] cursor-pointer text-left ${accentBorderHover[item.accent]}`}
                 >
                   {/* Top pigment accent hairline */}
                   <div className={`h-1 w-full ${accentStripe[item.accent]} opacity-75 group-hover:opacity-100 transition-opacity`} />
@@ -160,10 +176,33 @@ export default function DailyCurationsSection({
                           </div>
                         </div>
 
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-bg-light border border-border text-[10px] font-mono-meta text-secondary group-hover:bg-dark group-hover:text-surface group-hover:border-dark transition-colors">
-                          <span>{item.sourceName}</span>
-                          <span>↗</span>
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleLike?.(item.id);
+                            }}
+                            className={`p-1.5 rounded-full border text-xs font-mono-meta transition-colors cursor-pointer ${
+                              isLiked
+                                ? "bg-accent text-white border-accent"
+                                : "bg-bg-light border-border text-muted hover:text-dark hover:border-dark"
+                            }`}
+                            aria-label={`收藏 ${item.title}`}
+                          >
+                            {isLiked ? "♥" : "♡"}
+                          </button>
+                          <a
+                            href={item.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-bg-light border border-border text-[10px] font-mono-meta text-secondary group-hover:bg-dark group-hover:text-surface group-hover:border-dark transition-colors"
+                          >
+                            <span>{item.sourceName}</span>
+                            <span>↗</span>
+                          </a>
+                        </div>
                       </div>
 
                       {/* Title & Provenance */}
@@ -195,21 +234,37 @@ export default function DailyCurationsSection({
                     {/* Tags & Archival Link Footer */}
                     <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/75">
                       <div className="flex flex-wrap gap-1.5">
-                        {item.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-[11px] font-mono-meta px-2 py-0.5 rounded bg-bg-card/85 text-secondary"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
+                        {item.tags.map((tag) => {
+                          const isTagSelected =
+                            searchQuery.trim().toLowerCase() ===
+                            tag.toLowerCase();
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={(e) => {
+                                if (!onSelectTag) return;
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onSelectTag(tag);
+                              }}
+                              className={`text-[11px] font-mono-meta px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                                isTagSelected
+                                  ? "bg-dark text-surface"
+                                  : "bg-bg-card/85 text-secondary hover:bg-dark/15 hover:text-dark"
+                              }`}
+                            >
+                              #{tag}
+                            </button>
+                          );
+                        })}
                       </div>
                       <span className="text-[11px] font-mono-meta uppercase text-dark group-hover:text-accent transition-colors shrink-0 ml-2">
                         READ DOSSIER →
                       </span>
                     </div>
                   </div>
-                </a>
+                </div>
               );
             })}
           </div>

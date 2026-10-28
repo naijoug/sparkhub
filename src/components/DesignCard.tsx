@@ -1,23 +1,33 @@
 "use client";
 
-import { useState } from "react";
 import { DesignCard as DesignCardType } from "@/lib/data";
 
 const tagColors: Record<string, string> = {
-  accent: "bg-accent-light text-accent border-accent/25",
-  purple: "bg-purple-light text-purple border-purple/25",
-  green: "bg-green-light text-green border-green/25",
-  yellow: "bg-yellow-light text-yellow border-yellow/25",
+  accent: "bg-accent-light text-accent border-accent/25 hover:bg-accent hover:text-white",
+  purple: "bg-purple-light text-purple border-purple/25 hover:bg-purple hover:text-white",
+  green: "bg-green-light text-green border-green/25 hover:bg-green hover:text-white",
+  yellow: "bg-yellow-light text-yellow border-yellow/25 hover:bg-yellow hover:text-white",
 };
 
 interface DesignCardProps {
   card: DesignCardType;
+  liked?: boolean;
+  onToggleLike?: (id: string) => void;
   onSelectCard?: (card: DesignCardType) => void;
+  onSelectTag?: (tag: string) => void;
+  activeSearchQuery?: string;
 }
 
-export default function DesignCard({ card, onSelectCard }: DesignCardProps) {
-  const [liked, setLiked] = useState(false);
+export default function DesignCard({
+  card,
+  liked = false,
+  onToggleLike,
+  onSelectCard,
+  onSelectTag,
+  activeSearchQuery = "",
+}: DesignCardProps) {
   const isWide = card.featuredSpan === "wide";
+  const normalizedSearch = activeSearchQuery.trim().toLowerCase();
 
   return (
     <article
@@ -90,14 +100,27 @@ export default function DesignCard({ card, onSelectCard }: DesignCardProps) {
         <div className="pt-4 mt-2 border-t border-border/80 flex items-center justify-between gap-2">
           {/* Tags */}
           <div className="flex flex-wrap gap-1.5">
-            {card.tags.map((tag) => (
-              <span
-                key={tag.label}
-                className={`inline-flex items-center h-[23px] px-2.5 rounded-full text-[11px] font-medium border ${tagColors[tag.color]}`}
-              >
-                #{tag.label}
-              </span>
-            ))}
+            {card.tags.map((tag) => {
+              const isSelected = normalizedSearch === tag.label.toLowerCase();
+              return (
+                <button
+                  key={tag.label}
+                  type="button"
+                  onClick={(e) => {
+                    if (!onSelectTag) return;
+                    e.stopPropagation();
+                    onSelectTag(tag.label);
+                  }}
+                  className={`inline-flex items-center h-[23px] px-2.5 rounded-full text-[11px] font-medium border transition-colors cursor-pointer ${
+                    isSelected
+                      ? "bg-dark text-surface border-dark"
+                      : tagColors[tag.color]
+                  }`}
+                >
+                  #{tag.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Stats */}
@@ -106,8 +129,9 @@ export default function DesignCard({ card, onSelectCard }: DesignCardProps) {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setLiked((prev) => !prev);
+                onToggleLike?.(card.id);
               }}
+              aria-pressed={liked}
               className={`inline-flex items-center gap-1 text-xs font-mono-meta transition-colors cursor-pointer ${
                 liked ? "text-accent font-semibold" : "text-muted hover:text-dark"
               }`}
@@ -182,6 +206,21 @@ export function ArtMotifGraphic({
           <path d="M20 104 Q 65 32, 110 84 T 200 62" stroke="rgba(255,255,255,0.5)" strokeWidth="1.3" />
           <path d="M20 118 Q 65 48, 110 98 T 200 78" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
           <circle cx="110" cy="68" r="5.5" fill="white" />
+        </svg>
+      );
+    case "matrix":
+      return (
+        <svg viewBox="0 0 220 140" className="w-52 h-36 group-hover:scale-105 transition-transform duration-700" fill="none">
+          <line x1="20" y1="35" x2="200" y2="35" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" strokeDasharray="3 3" />
+          <line x1="20" y1="70" x2="200" y2="70" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+          <line x1="20" y1="105" x2="200" y2="105" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" strokeDasharray="3 3" />
+          <line x1="65" y1="15" x2="65" y2="125" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
+          <line x1="110" y1="15" x2="110" y2="125" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2" />
+          <line x1="155" y1="15" x2="155" y2="125" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
+          <circle cx="110" cy="70" r="18" stroke="rgba(255,255,255,0.92)" strokeWidth="1.5" />
+          <rect x="58" y="28" width="14" height="14" stroke="rgba(255,255,255,0.7)" strokeWidth="1" />
+          <rect x="148" y="98" width="14" height="14" stroke="rgba(255,255,255,0.7)" strokeWidth="1" />
+          <circle cx="110" cy="70" r="4" fill="white" />
         </svg>
       );
     default:

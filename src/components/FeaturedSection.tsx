@@ -7,24 +7,19 @@ import DesignCard, { ArtMotifGraphic } from "./DesignCard";
 interface FeaturedSectionProps {
   activeCategory?: string;
   searchQuery?: string;
+  onSelectTag?: (tag: string) => void;
+  likedIds?: string[];
+  onToggleLike?: (id: string) => void;
 }
 
 export default function FeaturedSection({
   activeCategory = "all",
   searchQuery = "",
+  onSelectTag,
+  likedIds = [],
+  onToggleLike,
 }: FeaturedSectionProps) {
   const [selectedCard, setSelectedCard] = useState<DesignCardType | null>(null);
-
-  useEffect(() => {
-    if (!selectedCard) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setSelectedCard(null);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedCard]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -41,6 +36,41 @@ export default function FeaturedSection({
     return matchesCategory && matchesQuery;
   });
 
+  const selectedIndex = selectedCard
+    ? filteredCards.findIndex((c) => c.id === selectedCard.id)
+    : -1;
+
+  useEffect(() => {
+    if (!selectedCard) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedCard(null);
+      } else if (e.key === "ArrowRight" && filteredCards.length > 1) {
+        const idx = filteredCards.findIndex((c) => c.id === selectedCard.id);
+        if (idx !== -1) {
+          setSelectedCard(filteredCards[(idx + 1) % filteredCards.length]);
+        }
+      } else if (e.key === "ArrowLeft" && filteredCards.length > 1) {
+        const idx = filteredCards.findIndex((c) => c.id === selectedCard.id);
+        if (idx !== -1) {
+          setSelectedCard(
+            filteredCards[
+              (idx - 1 + filteredCards.length) % filteredCards.length
+            ]
+          );
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedCard, filteredCards]);
+
   return (
     <section
       id="featured"
@@ -55,6 +85,11 @@ export default function FeaturedSection({
                 WING II · 展馆二
               </span>
               <span>PERMANENT COLLECTION · 常设数字设计馆藏</span>
+              {likedIds.length > 0 && (
+                <span className="px-2 py-0.5 rounded bg-accent-light text-accent border border-accent/25">
+                  SAVED: {likedIds.length}
+                </span>
+              )}
             </div>
             <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-dark">
               精选视觉与交互作品 ·{" "}
@@ -79,7 +114,11 @@ export default function FeaturedSection({
               <DesignCard
                 key={card.id}
                 card={card}
+                liked={likedIds.includes(card.id)}
+                onToggleLike={onToggleLike}
                 onSelectCard={(item) => setSelectedCard(item)}
+                onSelectTag={onSelectTag}
+                activeSearchQuery={searchQuery}
               />
             ))}
           </div>
@@ -109,13 +148,48 @@ export default function FeaturedSection({
                 <span>·</span>
                 <span>{selectedCard.medium}</span>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedCard(null)}
-                className="text-[11px] font-mono-meta px-3 py-1 rounded-full border border-border hover:border-dark bg-surface text-secondary hover:text-dark cursor-pointer transition-colors"
-              >
-                ESC / CLOSE ✕
-              </button>
+              <div className="flex items-center gap-2">
+                {filteredCards.length > 1 && selectedIndex !== -1 && (
+                  <div className="flex items-center gap-1 mr-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedCard(
+                          filteredCards[
+                            (selectedIndex - 1 + filteredCards.length) %
+                              filteredCards.length
+                          ]
+                        )
+                      }
+                      aria-label="上一件展品"
+                      className="text-[11px] font-mono-meta px-2.5 py-1 rounded-full border border-border hover:border-dark bg-surface text-secondary hover:text-dark cursor-pointer transition-colors"
+                    >
+                      ← PREV
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedCard(
+                          filteredCards[
+                            (selectedIndex + 1) % filteredCards.length
+                          ]
+                        )
+                      }
+                      aria-label="下一件展品"
+                      className="text-[11px] font-mono-meta px-2.5 py-1 rounded-full border border-border hover:border-dark bg-surface text-secondary hover:text-dark cursor-pointer transition-colors"
+                    >
+                      NEXT →
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedCard(null)}
+                  className="text-[11px] font-mono-meta px-3 py-1 rounded-full border border-border hover:border-dark bg-surface text-secondary hover:text-dark cursor-pointer transition-colors"
+                >
+                  ESC / CLOSE ✕
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12">
@@ -135,7 +209,7 @@ export default function FeaturedSection({
               <div className="md:col-span-6 p-6 sm:p-8 flex flex-col justify-between gap-6">
                 <div className="space-y-4">
                   <div>
-                    <span className="text-[11px] font-mono-meta uppercase text-accent">
+                    <span className="text-[11px] font-mono-meta uppercase text-accent font-semibold">
                       {selectedCard.author}
                     </span>
                     <h3
@@ -147,8 +221,19 @@ export default function FeaturedSection({
                   </div>
 
                   <p className="text-sm text-secondary leading-[1.8]">
-                    {selectedCard.subtitle}。该作品收录于 SparkHub 常设数字设计文献馆，展示了当代界面网格秩序、排版张力与感官交互的融合。
+                    {selectedCard.subtitle}。
                   </p>
+
+                  {selectedCard.curatorCritique && (
+                    <div className="relative pl-3.5 border-l-2 border-accent bg-bg-light/95 py-2.5 pr-3 rounded-r-lg">
+                      <span className="font-mono-meta text-[10px] uppercase text-accent font-semibold block mb-0.5">
+                        CURATORIAL CRITIQUE //
+                      </span>
+                      <p className="font-editorial italic text-xs text-dark/95 leading-relaxed">
+                        “{selectedCard.curatorCritique}”
+                      </p>
+                    </div>
+                  )}
 
                   <div className="p-3.5 rounded-xl bg-bg-light border border-border space-y-1.5">
                     <div className="text-[10px] font-mono-meta uppercase text-muted">
@@ -161,19 +246,47 @@ export default function FeaturedSection({
 
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {selectedCard.tags.map((t) => (
-                      <span
+                      <button
                         key={t.label}
-                        className="text-[11px] font-mono-meta px-2.5 py-0.5 rounded-full bg-bg-card border border-border text-secondary"
+                        type="button"
+                        onClick={() => {
+                          onSelectTag?.(t.label);
+                          setSelectedCard(null);
+                        }}
+                        className="text-[11px] font-mono-meta px-2.5 py-0.5 rounded-full bg-bg-card border border-border text-secondary hover:border-dark hover:text-dark cursor-pointer transition-colors"
                       >
                         #{t.label}
-                      </span>
+                      </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-border text-xs font-mono-meta text-muted">
-                  <span>APPRECIATIONS: {selectedCard.likes}</span>
-                  <span>EXHIBITION VIEWS: {selectedCard.views}</span>
+                  <button
+                    type="button"
+                    onClick={() => onToggleLike?.(selectedCard.id)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors cursor-pointer ${
+                      likedIds.includes(selectedCard.id)
+                        ? "bg-accent-light text-accent border-accent/30 font-semibold"
+                        : "bg-bg-light text-secondary border-border hover:border-dark"
+                    }`}
+                  >
+                    <span>{likedIds.includes(selectedCard.id) ? "♥ SAVED" : "♡ APPRECIATE"}</span>
+                    <span>
+                      ({likedIds.includes(selectedCard.id) ? `${selectedCard.likes}+` : selectedCard.likes})
+                    </span>
+                  </button>
+
+                  {selectedCard.href && (
+                    <a
+                      href={selectedCard.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-dark hover:text-accent transition-colors"
+                    >
+                      <span>VISIT ↗</span>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
