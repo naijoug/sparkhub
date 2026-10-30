@@ -1,6 +1,6 @@
 "use client";
 
-import { hotTags } from "@/lib/data";
+import { dailyCurations, featuredCards, hotTags } from "@/lib/data";
 
 const tagColors: Record<string, string> = {
   accent: "bg-accent-light/90 text-accent border-accent/25 hover:bg-accent hover:text-white",
@@ -35,7 +35,7 @@ export default function Hero({
           <div className="flex items-center gap-4">
             <span className="hidden md:inline">CURATED BY SPARKHUB ATELIER</span>
             <span className="px-2 py-0.5 rounded border border-border bg-surface text-dark">
-              FOLIO I — IV
+              FOLIO I — V
             </span>
           </div>
         </div>
@@ -243,21 +243,25 @@ export default function Hero({
 
                 <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border/80 text-center">
                   <div className="bg-bg-light/70 rounded-xl py-2.5 px-2 border border-border/60">
-                    <div className="font-editorial text-xl font-bold text-dark">08</div>
+                    <div className="font-editorial text-xl font-bold text-dark">
+                      {String(dailyCurations.length).padStart(2, "0")}
+                    </div>
                     <div className="text-[10px] font-mono-meta text-muted mt-0.5">
                       RADAR · 今日漫游
                     </div>
                   </div>
                   <div className="bg-bg-light/70 rounded-xl py-2.5 px-2 border border-border/60">
-                    <div className="font-editorial text-xl font-bold text-dark">16</div>
+                    <div className="font-editorial text-xl font-bold text-dark">
+                      {String(featuredCards.length).padStart(2, "0")}
+                    </div>
                     <div className="text-[10px] font-mono-meta text-muted mt-0.5">
-                      ARCHIVE · 馆藏与赛作
+                      ARCHIVE · 常设馆藏
                     </div>
                   </div>
                   <div className="bg-accent-light/50 rounded-xl py-2.5 px-2 border border-accent/25">
-                    <div className="font-editorial text-xl font-bold text-accent">IV</div>
+                    <div className="font-editorial text-xl font-bold text-accent">V</div>
                     <div className="text-[10px] font-mono-meta text-accent mt-0.5">
-                      WINGS · 四大主题展馆
+                      WINGS · 五大主题展馆
                     </div>
                   </div>
                 </div>

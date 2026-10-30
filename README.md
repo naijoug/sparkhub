@@ -13,7 +13,7 @@ SparkHub 是一座专注于数字界面美学、先锋创客实验与生成式�
   - 配备学术引言、出处考证（Provenance）与策展人笔记（Curator's Note）。
 - **WING II · 常设数字设计馆藏 (Permanent Collection)**
   - 精选涵盖 Web、Mobile、Brand Identity、3D Spatial、Kinetic Motion、Illustration、Interaction 及 **Design Engineering（设计工程）** 的经典数字造物。
-  - 搭载六大生成式几何图腾（Bauhaus、Kinetic、Topography、Prism、Orbital、Matrix）与双向键盘导航文献灯箱。
+  - 搭载七大生成式几何图腾（Bauhaus、Kinetic、Topography、Prism、Orbital、Editorial、Matrix）与双向键盘导航文献灯箱。
 - **WING III · 极客先锋造物 (Hackathon Specimens)**
   - 汇聚 ETHGlobal、HackUST、TreeHacks、HackMIT 等全球顶级黑客松的创新实验原型（如 Uniswap v4 挂钩生成器、无网 SMS 链上结算、城市碳足迹流体地图等）。
 - **WING IV · 算法与合成美学 (Generative Symposium / 暗房特展)**
@@ -43,13 +43,20 @@ SparkHub 是一座专注于数字界面美学、先锋创客实验与生成式�
 
 ---
 
-## 🛠️ 技术栈 (Tech Stack)
+## 🛠️ 技术栈与视觉系统 (Tech Stack & Visual System)
 
-- **框架**: Next.js 16.3 (Turbopack, App Router)
-- **运行时**: React 19
-- **样式系统**: Tailwind CSS v4 (`@theme inline` 原生设计规范与色彩令牌)
-- **字体与版式**: 现代社论 Serif (Playfair / Instrument / 宋体) + 极客等宽 Mono (JetBrains Mono)
-- **语言**: TypeScript (类型安全)
+- **框架**: Next.js 16.3 (Turbopack, App Router, Static Export `output: 'export'`)
+- **运行时**: React 19 (RSC 服务端预渲染首屏展签 + Client Island 交互层)
+- **样式系统**: Tailwind CSS v4 (`@theme inline` 原生设计规范与博物馆矿物色彩令牌)
+  - `#F6F2E9` 暖羊皮纸基底 (Alabaster Parchment)
+  - `#C8432B` 策展朱砂 (Curatorial Vermilion)
+  - `#4A3BC2` 皇家群青 (Royal Ultramarine)
+  - `#245E47` 孔雀石绿 (Malachite Green)
+  - `#B87B18` 典藏赭金 (Archive Ochre)
+  - `#141312` 黑曜石暗房 (Obsidian Darkroom)
+- **字体与版式**: 现代社论 Serif (`Instrument Serif` / `Playfair Display` / `Songti SC`) + 无衬线 (`Plus Jakarta Sans` / `PingFang SC`) + 馆藏等宽编号 (`JetBrains Mono`)
+- **语言**: TypeScript (全链路类型安全)
+- **自动化部署**: GitHub Actions (`.github/workflows/deploy.yml`) 推送 `main` 分支后自动构建并发布至 GitHub Pages ([https://naijoug.github.io/sparkhub/](https://naijoug.github.io/sparkhub/))
 
 ---
 
