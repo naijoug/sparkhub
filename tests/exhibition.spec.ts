@@ -21,11 +21,11 @@ test("search inputs, category counts, source counts, empty state and reset agree
   const search = page.getByRole("textbox", { name: "全馆检索", exact: true });
   await search.fill("  wEbGL  ");
   await expect(page.getByRole("textbox", { name: "检索全馆灵感与作品" })).toHaveValue("  wEbGL  ");
-  await expect(page.locator("main [role=status]")).toContainText("共命中 6");
+  await expect(page.locator("main [role=status]")).toContainText("共命中 7");
   await page.getByRole("button", { name: /新锐器物 PRODUCTS/ }).click();
   await expect(page.locator("#daily-curations h3")).toHaveCount(0);
   await expect(page.locator("main [role=status]")).toContainText("漫游志 [0]");
-  await expect(page.locator("main [role=status]")).toContainText("共命中 5");
+  await expect(page.locator("main [role=status]")).toContainText("共命中 6");
   await search.fill("Mobbin");
   await page.getByRole("button", { name: /中文设计来源/ }).click();
   await expect(page.locator("#sources h4")).toHaveCount(0);
@@ -144,7 +144,7 @@ for (const mobile of [false, true]) {
     const content = await readFile((await download.path())!, "utf8");
     expect(content).toContain("典藏总量：5");
     expect(content.match(/^### /gm)).toHaveLength(5);
-    for (const text of [featuredTitle, "FlowFest 2025", "Web3 去中心化社交平台", "Midjourney 建筑概念设计", "Mobbin", "**标签**", "https://mobbin.com/"]) expect(content).toContain(text);
+    for (const text of [featuredTitle, "FlowFest 2025", "Jayu (自由)", "Midjourney 建筑概念设计", "Mobbin", "**标签**", "https://mobbin.com/"]) expect(content).toContain(text);
     await download.saveAs(test.info().outputPath(download.suggestedFilename()));
   });
 }
@@ -169,7 +169,7 @@ test("copy citation writes the actual clipboard and resets on another item", asy
     await expect(dialog.getByRole("status")).toBeEmpty();
     await dialog.getByRole("button", { name: /复制学术引文/ }).click();
     await expect(dialog.getByRole("status")).toContainText("引文已复制");
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("Web3 去中心化社交平台");
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("Jayu (自由)");
   } finally {
     await page.evaluate((text) => navigator.clipboard.writeText(text), previous);
   }
@@ -206,4 +206,46 @@ test("export creation failure offers a retry", async ({ page }) => {
   await page.getByRole("button", { name: /导出策展笔记/ }).click();
   expect(await (await pending).failure()).toBeNull();
   await expect(page.getByRole("dialog").getByRole("alert")).toHaveCount(0);
+});
+
+test("dark mode toggle switches theme and persists across reload", async ({ page }) => {
+  const themeBtn = page.getByRole("button", { name: "切换深色或浅色模式" });
+  const initialTheme = await page.locator("html").getAttribute("data-theme");
+  await themeBtn.click();
+  const nextTheme = initialTheme === "dark" ? "light" : "dark";
+  await expect(page.locator("html")).toHaveAttribute("data-theme", nextTheme);
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", nextTheme);
+  await themeBtn.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", initialTheme ?? "light");
+});
+
+test("quick view bar progressive disclosure, wing focus, compact view and favorites-only filter work", async ({ page }) => {
+  // Progressive disclosure defaults to 6 items in daily-curations and expands on click
+  await expect(page.locator("#daily-curations h3")).toHaveCount(6);
+  await page.getByRole("button", { name: /展开全部 18 期漫游志/ }).click();
+  await expect(page.locator("#daily-curations h3")).toHaveCount(18);
+  await page.getByRole("button", { name: /收起部分漫游志/ }).click();
+  await expect(page.locator("#daily-curations h3")).toHaveCount(6);
+
+  // Wing focus isolates a single wing and expands it automatically
+  const toolbar = page.getByRole("region", { name: "快捷浏览与视图控制栏" });
+  await toolbar.getByRole("button", { name: /01 每日漫游/ }).click();
+  await expect(page.locator("#featured")).toHaveCount(0);
+  await expect(page.locator("#daily-curations h3")).toHaveCount(18);
+  await toolbar.getByRole("button", { name: /全部展区/ }).click();
+  await expect(page.locator("#featured")).toBeVisible();
+
+  // Compact view density toggle
+  const compactBtn = toolbar.getByRole("button", { name: "紧凑列表" });
+  await compactBtn.click();
+  await expect(compactBtn).toHaveAttribute("aria-pressed", "true");
+
+  // Favorites-only in-page filter
+  await page.getByRole("button", { name: `收藏 ${featuredTitle}`, exact: true }).click();
+  const favFilterBtn = toolbar.getByRole("button", { name: /只看已收藏/ });
+  await favFilterBtn.click();
+  await expect(favFilterBtn).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#featured h3")).toHaveCount(1);
+  await expect(page.locator("#daily-curations h3")).toHaveCount(0);
 });

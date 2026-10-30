@@ -16,6 +16,7 @@ interface DesignCardProps {
   onSelectCard?: (card: DesignCardType) => void;
   onSelectTag?: (tag: string) => void;
   activeSearchQuery?: string;
+  compact?: boolean;
 }
 
 export default function DesignCard({
@@ -25,8 +26,9 @@ export default function DesignCard({
   onSelectCard,
   onSelectTag,
   activeSearchQuery = "",
+  compact = false,
 }: DesignCardProps) {
-  const isWide = card.featuredSpan === "wide";
+  const isWide = !compact && card.featuredSpan === "wide";
   const normalizedSearch = activeSearchQuery.trim().toLowerCase();
 
   return (
@@ -46,13 +48,13 @@ export default function DesignCard({
       }`}
     >
       {/* Top Archival Placard Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-bg-light/75 text-[10px] font-mono-meta text-muted">
+      <div className="flex items-center justify-between px-5 py-2.5 border-b border-border bg-bg-light/75 text-[10px] font-mono-meta text-muted">
         <div className="flex items-center gap-2">
           <span className="text-accent font-semibold">◆</span>
           <span className="text-dark font-medium">{card.catalogNo}</span>
           {isWide && (
             <span className="px-2 py-0.5 rounded bg-accent-light text-accent border border-accent/25 text-[9px]">
-              CURATORIAL FEATURE · 重点展品
+              重点展品
             </span>
           )}
         </div>
@@ -64,40 +66,56 @@ export default function DesignCard({
       {/* Artistic Generative Canvas */}
       <div
         className={`relative w-full ${
-          isWide ? "h-[270px] sm:h-[290px]" : "h-[245px]"
+          compact
+            ? "h-[150px]"
+            : isWide
+              ? "h-[260px] sm:h-[280px]"
+              : "h-[230px]"
         } bg-gradient-to-br ${card.image} flex items-center justify-center overflow-hidden p-6`}
       >
         {/* Inner gallery mat border & corner crosshairs */}
         <div className="absolute inset-3.5 border border-white/20 rounded-xl pointer-events-none" />
-        <span className="absolute top-5 left-5 text-[9px] font-mono-meta text-white/45 pointer-events-none">
+        <span className="absolute top-4 left-4 text-[9px] font-mono-meta text-white/45 pointer-events-none">
           FIG. {card.id.padStart(2, "0")}
         </span>
-        <span className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-mono-meta uppercase px-2.5 py-1 rounded-full bg-black/50 text-white border border-white/20 backdrop-blur-md">
-          OPEN DOSSIER · 开启画廊灯箱 ↗
+        <span className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-mono-meta uppercase px-2.5 py-1 rounded-full bg-black/55 text-white border border-white/20 backdrop-blur-md">
+          查看详情 ↗
         </span>
 
         <ArtMotifGraphic motif={card.artMotif} />
 
-        <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between text-[10px] font-mono-meta uppercase tracking-widest text-white/75 pointer-events-none">
-          <span>MOTIF // {card.artMotif}</span>
+        <div className="absolute bottom-3.5 left-4 right-4 flex items-center justify-between text-[10px] font-mono-meta uppercase tracking-widest text-white/75 pointer-events-none">
+          <span>{card.artMotif}</span>
           <span>{card.author}</span>
         </div>
       </div>
 
       {/* Editorial Plaque Content */}
-      <div className="flex flex-col gap-3 p-6 flex-1 justify-between">
+      <div
+        className={`flex flex-col gap-3 ${
+          compact ? "p-4" : "p-6"
+        } flex-1 justify-between`}
+      >
         <div className="space-y-2">
           <div className="flex items-baseline justify-between gap-3">
-            <h3 className="font-editorial text-xl sm:text-[22px] font-bold text-dark group-hover:text-accent transition-colors leading-snug">
+            <h3
+              className={`font-editorial ${
+                compact ? "text-lg" : "text-xl sm:text-[22px]"
+              } font-bold text-dark group-hover:text-accent transition-colors leading-snug`}
+            >
               {card.title}
             </h3>
           </div>
-          <p className="text-xs sm:text-[13px] text-secondary leading-[1.7]">
+          <p
+            className={`text-xs sm:text-[13px] text-secondary leading-[1.7] ${
+              compact ? "line-clamp-2" : ""
+            }`}
+          >
             {card.subtitle}
           </p>
         </div>
 
-        <div className="pt-4 mt-2 border-t border-border/80 flex items-center justify-between gap-2">
+        <div className="pt-3.5 mt-2 border-t border-border/80 flex items-center justify-between gap-2">
           {/* Tags */}
           <div className="flex flex-wrap gap-1.5">
             {card.tags.map((tag) => {
@@ -123,8 +141,8 @@ export default function DesignCard({
             })}
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-3.5 shrink-0">
+          {/* Stats & Bookmark */}
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
               type="button"
               onClick={(e) => {
@@ -132,18 +150,25 @@ export default function DesignCard({
                 onToggleLike?.(card.id);
               }}
               aria-pressed={liked}
-              className={`inline-flex items-center gap-1 text-xs font-mono-meta transition-colors cursor-pointer ${
-                liked ? "text-accent font-semibold" : "text-muted hover:text-dark"
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-mono-meta transition-colors cursor-pointer ${
+                liked
+                  ? "bg-accent text-white border-accent font-semibold"
+                  : "bg-bg-light border-border text-secondary hover:text-dark hover:border-dark"
               }`}
               aria-label={`收藏 ${card.title}`}
             >
               <HeartIcon filled={liked} />
-              {liked ? `${card.likes}+` : card.likes}
+              <span>{liked ? "已收藏" : "收藏"}</span>
+              <span className="opacity-80">
+                {liked ? `${card.likes}+` : card.likes}
+              </span>
             </button>
-            <span className="inline-flex items-center gap-1 text-xs font-mono-meta text-muted">
-              <EyeIcon />
-              {card.views}
-            </span>
+            {!compact && (
+              <span className="inline-flex items-center gap-1 text-xs font-mono-meta text-muted">
+                <EyeIcon />
+                {card.views}
+              </span>
+            )}
           </div>
         </div>
       </div>

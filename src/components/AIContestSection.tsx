@@ -15,6 +15,8 @@ interface AIContestSectionProps {
   likedIds?: string[];
   onToggleLike?: (id: string) => void;
   onInspectDossier?: (item: AIContestCard) => void;
+  viewMode?: "comfort" | "compact";
+  favoritesOnly?: boolean;
 }
 
 export default function AIContestSection({
@@ -23,18 +25,24 @@ export default function AIContestSection({
   likedIds = [],
   onToggleLike,
   onInspectDossier,
+  viewMode = "comfort",
+  favoritesOnly = false,
 }: AIContestSectionProps) {
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
   const filteredCards = aiContestCards.filter(
     (card) =>
-      !normalizedQuery ||
-      card.title.toLowerCase().includes(normalizedQuery) ||
-      card.curatorNote.toLowerCase().includes(normalizedQuery) ||
-      card.meta.toLowerCase().includes(normalizedQuery) ||
-      card.badge.toLowerCase().includes(normalizedQuery) ||
-      (card.tags && card.tags.some((t) => t.toLowerCase().includes(normalizedQuery)))
+      (!favoritesOnly || likedIds.includes(card.id)) &&
+      (!normalizedQuery ||
+        card.title.toLowerCase().includes(normalizedQuery) ||
+        card.curatorNote.toLowerCase().includes(normalizedQuery) ||
+        card.meta.toLowerCase().includes(normalizedQuery) ||
+        card.badge.toLowerCase().includes(normalizedQuery) ||
+        (card.tags &&
+          card.tags.some((t) => t.toLowerCase().includes(normalizedQuery))))
   );
+
+  const isCompact = viewMode === "compact";
 
   return (
     <section
@@ -65,7 +73,7 @@ export default function AIContestSection({
             href="https://www.producthunt.com/categories/ai-designer"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-mono-meta uppercase text-accent-light hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-mono-meta uppercase text-[#F9EAE6] hover:text-white transition-colors"
           >
             <span>EXPLORE GENERATIVE ATELIER · 探索更多生成式工具</span>
             <span>↗</span>
@@ -74,10 +82,16 @@ export default function AIContestSection({
 
         {filteredCards.length === 0 ? (
           <div className="py-12 text-center text-sm text-white/60 bg-white/5 rounded-2xl border border-white/10">
-            暂无匹配“{searchQuery}”的生成式艺术佳作。
+            {favoritesOnly
+              ? "算法美学展区中暂无已收藏作品，点击展品卡片右上角的「♡ 收藏」即可加入。"
+              : `暂无匹配“${searchQuery}”的生成式艺术佳作。`}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            className={`grid grid-cols-1 sm:grid-cols-2 ${
+              isCompact ? "lg:grid-cols-3 gap-4" : "lg:grid-cols-3 gap-6"
+            }`}
+          >
             {filteredCards.map((card, idx) => {
               const isLiked = likedIds.includes(card.id);
 
@@ -97,7 +111,9 @@ export default function AIContestSection({
                 >
                   {/* Luminous Latent-Space Plate */}
                   <div
-                    className={`relative w-full h-[200px] bg-gradient-to-br ${card.image} flex flex-col justify-between p-5 overflow-hidden`}
+                    className={`relative w-full ${
+                      isCompact ? "h-[140px]" : "h-[190px]"
+                    } bg-gradient-to-br ${card.image} flex flex-col justify-between p-5 overflow-hidden`}
                   >
                     <div className="absolute inset-3 border border-white/20 rounded-xl pointer-events-none" />
 
@@ -138,16 +154,16 @@ export default function AIContestSection({
                             e.stopPropagation();
                             onToggleLike?.(card.id);
                           }}
-                          className={`p-1 rounded-full text-xs transition-colors cursor-pointer ${
+                          aria-pressed={isLiked}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono-meta transition-colors cursor-pointer ${
                             isLiked
-                              ? "bg-accent text-white"
-                              : "bg-black/50 text-white/80 hover:bg-black/80 hover:text-white"
+                              ? "bg-accent text-white font-semibold"
+                              : "bg-black/55 text-white/90 hover:bg-black/80 hover:text-white border border-white/20"
                           }`}
                           aria-label={`收藏 ${card.title}`}
                         >
-                          {isLiked ? "♥" : "♡"}
+                          <span>{isLiked ? "♥ 已收藏" : "♡ 收藏"}</span>
                         </button>
-                        <span>DOSSIER ↗</span>
                       </div>
                     </div>
 
@@ -160,10 +176,14 @@ export default function AIContestSection({
 
                   {/* Dark Gallery Placard Content */}
                   <div className="flex flex-col gap-2.5 p-5 flex-1">
-                    <h3 className="font-editorial text-lg font-bold text-[#F6F2E9] group-hover:text-accent-light transition-colors leading-snug">
+                    <h3 className="font-editorial text-lg font-bold text-[#F6F2E9] group-hover:text-[#F9EAE6] transition-colors leading-snug">
                       {card.title}
                     </h3>
-                    <p className="text-xs text-white/70 leading-[1.7]">
+                    <p
+                      className={`text-xs text-white/70 leading-[1.7] ${
+                        isCompact ? "line-clamp-2" : ""
+                      }`}
+                    >
                       {card.curatorNote}
                     </p>
 
@@ -177,7 +197,7 @@ export default function AIContestSection({
                               e.stopPropagation();
                               onSelectTag?.(tag);
                             }}
-                            className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-white/10 text-white/75 hover:bg-white hover:text-dark transition-colors cursor-pointer"
+                            className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-white/10 text-white/75 hover:bg-white hover:text-[#141312] transition-colors cursor-pointer"
                           >
                             #{tag}
                           </button>

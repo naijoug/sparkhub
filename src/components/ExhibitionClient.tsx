@@ -17,14 +17,42 @@ import {
   aiContestCards,
   dailyCurations,
   featuredCards,
-  hackathonCards,
   DailyCurationItem,
-  HackathonCard,
   AIContestCard,
   CurationCategory,
 } from "@/lib/data";
+import { allHackathonProducts, HackathonProduct } from "@/lib/hackathons";
+import { inspirationSources } from "@/lib/sources";
 import { filterDailyCurations, filterSources, SourceFilter } from "@/lib/filters";
 import { useCuratorialFolio } from "@/lib/useCuratorialFolio";
+
+export type WingId =
+  | "all"
+  | "daily-curations"
+  | "featured"
+  | "hackathons"
+  | "ai-contests"
+  | "sources";
+
+export type ViewDensityMode = "comfort" | "compact";
+
+const wingTabs: { id: WingId; label: string; count: number }[] = [
+  {
+    id: "all",
+    label: "全部展区",
+    count:
+      dailyCurations.length +
+      featuredCards.length +
+      allHackathonProducts.length +
+      aiContestCards.length +
+      inspirationSources.length,
+  },
+  { id: "daily-curations", label: "01 每日漫游", count: dailyCurations.length },
+  { id: "featured", label: "02 常设画廊", count: featuredCards.length },
+  { id: "hackathons", label: "03 极客造物", count: allHackathonProducts.length },
+  { id: "ai-contests", label: "04 算法美学", count: aiContestCards.length },
+  { id: "sources", label: "05 信源图谱", count: inspirationSources.length },
+];
 
 export default function ExhibitionClient({
   children,
@@ -35,6 +63,9 @@ export default function ExhibitionClient({
   const [dailyCategory, setDailyCategory] = useState<CurationCategory>("all");
   const [sourceSection, setSourceSection] = useState<SourceFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeWing, setActiveWing] = useState<WingId>("all");
+  const [viewMode, setViewMode] = useState<ViewDensityMode>("comfort");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [folioOpen, setFolioOpen] = useState(false);
   const [inspectingDossier, setInspectingDossier] =
     useState<DossierInspectItem | null>(null);
@@ -61,13 +92,15 @@ export default function ExhibitionClient({
           ))
     ).length;
 
-    const hackathonCount = hackathonCards.filter(
-      (card) =>
-        card.title.toLowerCase().includes(normalizedQuery) ||
-        card.summary.toLowerCase().includes(normalizedQuery) ||
-        card.team.toLowerCase().includes(normalizedQuery) ||
-        card.badge.toLowerCase().includes(normalizedQuery) ||
-        (card.tags && card.tags.some((t) => t.toLowerCase().includes(normalizedQuery)))
+    const hackathonCount = allHackathonProducts.filter(
+      (p) =>
+        p.title.toLowerCase().includes(normalizedQuery) ||
+        p.tagline.toLowerCase().includes(normalizedQuery) ||
+        p.summary.toLowerCase().includes(normalizedQuery) ||
+        p.targetPlatform.toLowerCase().includes(normalizedQuery) ||
+        p.award.toLowerCase().includes(normalizedQuery) ||
+        p.team.name.toLowerCase().includes(normalizedQuery) ||
+        p.techStack.some((t) => t.toLowerCase().includes(normalizedQuery))
     ).length;
 
     const aiCount = aiContestCards.filter(
@@ -113,19 +146,19 @@ export default function ExhibitionClient({
     });
   };
 
-  const handleInspectHackathon = (item: HackathonCard) => {
+  const handleInspectHackathonProduct = (product: HackathonProduct) => {
     setInspectingDossier({
-      id: item.id,
-      catalogNo: item.catalogNo,
-      categoryLabel: `黑客松实验原型 · ${item.badge}`,
-      title: item.title,
-      authorOrHost: item.team,
-      summary: item.summary,
-      curatorNote: item.curatorNote,
-      tags: item.tags ?? ["黑客松", "极客先锋"],
-      accent: item.badgeColor,
-      href: item.href,
-      sourceName: "Global Hackathon",
+      id: product.id,
+      catalogNo: product.catalogNo,
+      categoryLabel: `${product.hackathonName} · ${product.award.split(" (")[0]}`,
+      title: product.title,
+      authorOrHost: `${product.team.name} · ${product.hackathonName}`,
+      summary: product.summary,
+      curatorNote: product.curatorCritique,
+      tags: [product.targetPlatform, ...product.techStack],
+      accent: "accent",
+      href: product.officialUrl,
+      sourceName: product.hackathonName,
     });
   };
 
@@ -146,10 +179,9 @@ export default function ExhibitionClient({
   };
 
   const handleRandomSerendipity = () => {
-    // Random discovery covers daily curations, hackathons, and AI exhibits.
     const collections = [
       ...dailyCurations.map((i) => ({ type: "daily" as const, item: i })),
-      ...hackathonCards.map((i) => ({ type: "hackathon" as const, item: i })),
+      ...allHackathonProducts.map((i) => ({ type: "hackathon" as const, item: i })),
       ...aiContestCards.map((i) => ({ type: "ai" as const, item: i })),
     ];
     const randomIndex = Math.floor(Math.random() * collections.length);
@@ -158,9 +190,19 @@ export default function ExhibitionClient({
     if (chosen.type === "daily") {
       handleInspectDaily(chosen.item as DailyCurationItem);
     } else if (chosen.type === "hackathon") {
-      handleInspectHackathon(chosen.item as HackathonCard);
+      handleInspectHackathonProduct(chosen.item as HackathonProduct);
     } else {
       handleInspectAIContest(chosen.item as AIContestCard);
+    }
+  };
+
+  const handleHeaderNavigate = (sectionId: string) => {
+    if (
+      sectionId !== "top" &&
+      activeWing !== "all" &&
+      activeWing !== sectionId
+    ) {
+      setActiveWing("all");
     }
   };
 
@@ -172,56 +214,158 @@ export default function ExhibitionClient({
         savedCount={likedIds.length}
         onOpenFolio={() => setFolioOpen(true)}
         onRandomSerendipity={handleRandomSerendipity}
+        onNavigateSection={handleHeaderNavigate}
       />
 
       <main className="flex-1">
         <Hero searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+
+        {/* Quick View, Wing Focus & Favorites Toolbar */}
+        <section
+          aria-label="快捷浏览与视图控制栏"
+          className="sticky top-[70px] sm:top-[102px] z-30 bg-surface/95 backdrop-blur-md border-b border-border px-6 lg:px-12 py-3 shadow-[0_4px_20px_rgba(20,19,18,0.04)]"
+        >
+          <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            {/* Wing Focus Switcher */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+              <span className="text-[11px] font-mono-meta text-muted mr-1.5 shrink-0 hidden sm:inline">
+                展区聚焦：
+              </span>
+              {wingTabs.map((tab) => {
+                const active = activeWing === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setActiveWing(tab.id)}
+                    className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                      active
+                        ? "bg-dark text-surface border-dark shadow-xs"
+                        : "bg-bg-light text-secondary border-border hover:border-dark/40 hover:text-dark"
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span
+                      className={`text-[10px] font-mono-meta ${
+                        active ? "opacity-80" : "text-muted"
+                      }`}
+                    >
+                      ({tab.count})
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right Controls: Favorites-Only Filter + View Density Toggle */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                aria-pressed={favoritesOnly}
+                onClick={() => setFavoritesOnly((prev) => !prev)}
+                className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                  favoritesOnly
+                    ? "bg-accent text-white border-accent shadow-xs font-semibold"
+                    : "bg-bg-light text-secondary border-border hover:border-accent hover:text-accent"
+                }`}
+              >
+                <span>{favoritesOnly ? "♥ 只看已收藏" : "♡ 只看已收藏"}</span>
+                <span
+                  className={`text-[10px] font-mono-meta px-1.5 rounded-full ${
+                    favoritesOnly
+                      ? "bg-white/20 text-white"
+                      : "bg-bg-card text-muted"
+                  }`}
+                >
+                  {likedIds.length}
+                </span>
+              </button>
+
+              <div
+                role="group"
+                aria-label="视图密度切换"
+                className="inline-flex items-center p-0.5 rounded-full bg-bg-card border border-border"
+              >
+                <button
+                  type="button"
+                  aria-pressed={viewMode === "comfort"}
+                  onClick={() => setViewMode("comfort")}
+                  className={`h-7 px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                    viewMode === "comfort"
+                      ? "bg-surface text-dark shadow-2xs"
+                      : "text-muted hover:text-dark"
+                  }`}
+                >
+                  舒适视图
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={viewMode === "compact"}
+                  onClick={() => setViewMode("compact")}
+                  className={`h-7 px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                    viewMode === "compact"
+                      ? "bg-surface text-dark shadow-2xs"
+                      : "text-muted hover:text-dark"
+                  }`}
+                >
+                  紧凑列表
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Live Curatorial Search Telemetry Bar */}
         {searchStats && (
           <div
             role="status"
             aria-live="polite"
-            className="bg-dark text-surface border-b border-border px-6 lg:px-12 py-3"
+            className="bg-[#181615] text-[#F6F2E9] border-b border-border px-6 lg:px-12 py-3"
           >
             <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs font-mono-meta">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-1.5 text-accent-light">
+                <span className="inline-flex items-center gap-1.5 text-[#F9EAE6]">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                   <span>ARCHIVE FILTER ACTIVE</span>
                 </span>
                 <span className="text-white/40">|</span>
                 <span>
                   关键词 “<strong className="text-white">{searchQuery}</strong>” 共命中{" "}
-                  <strong className="text-accent-light">{searchStats.total}</strong> 项馆藏：
+                  <strong className="text-[#F9EAE6]">{searchStats.total}</strong> 项馆藏：
                 </span>
                 <a
                   href="#daily-curations"
-                  className="hover:text-accent-light transition-colors underline underline-offset-4"
+                  onClick={() => handleHeaderNavigate("daily-curations")}
+                  className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
                 >
                   漫游志 [{searchStats.dailyCount}]
                 </a>
                 <a
                   href="#featured"
-                  className="hover:text-accent-light transition-colors underline underline-offset-4"
+                  onClick={() => handleHeaderNavigate("featured")}
+                  className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
                 >
                   常设展 [{searchStats.featuredCount}]
                 </a>
                 <a
                   href="#hackathons"
-                  className="hover:text-accent-light transition-colors underline underline-offset-4"
+                  onClick={() => handleHeaderNavigate("hackathons")}
+                  className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
                 >
                   黑客松 [{searchStats.hackathonCount}]
                 </a>
                 <a
                   href="#ai-contests"
-                  className="hover:text-accent-light transition-colors underline underline-offset-4"
+                  onClick={() => handleHeaderNavigate("ai-contests")}
+                  className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
                 >
                   AI 特展 [{searchStats.aiCount}]
                 </a>
                 <a
                   href="#sources"
-                  className="hover:text-accent-light transition-colors underline underline-offset-4"
+                  onClick={() => handleHeaderNavigate("sources")}
+                  className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
                 >
                   信源图谱 [{searchStats.sourceCount}]
                 </a>
@@ -238,54 +382,80 @@ export default function ExhibitionClient({
           </div>
         )}
 
-        <DailyCurationsSection
-          selectedTab={dailyCategory}
-          onSelectTab={setDailyCategory}
-          searchQuery={searchQuery}
-          onSelectTag={handleToggleTag}
-          likedIds={likedIds}
-          onToggleLike={handleToggleLike}
-          onInspectDossier={handleInspectDaily}
-        />
+        {(activeWing === "all" || activeWing === "daily-curations") && (
+          <DailyCurationsSection
+            selectedTab={dailyCategory}
+            onSelectTab={setDailyCategory}
+            searchQuery={searchQuery}
+            onSelectTag={handleToggleTag}
+            likedIds={likedIds}
+            onToggleLike={handleToggleLike}
+            onInspectDossier={handleInspectDaily}
+            viewMode={viewMode}
+            favoritesOnly={favoritesOnly}
+            forceExpanded={activeWing === "daily-curations"}
+          />
+        )}
 
-        <CategoryBar
-          activeCategory={activeCategory}
-          onSelectCategory={setActiveCategory}
-          searchQuery={searchQuery}
-        />
+        {(activeWing === "all" || activeWing === "featured") && (
+          <>
+            <CategoryBar
+              activeCategory={activeCategory}
+              onSelectCategory={setActiveCategory}
+              searchQuery={searchQuery}
+            />
 
-        <FeaturedSection
-          activeCategory={activeCategory}
-          searchQuery={searchQuery}
-          onSelectTag={handleToggleTag}
-          likedIds={likedIds}
-          onToggleLike={handleToggleLike}
-        />
+            <FeaturedSection
+              activeCategory={activeCategory}
+              searchQuery={searchQuery}
+              onSelectTag={handleToggleTag}
+              likedIds={likedIds}
+              onToggleLike={handleToggleLike}
+              viewMode={viewMode}
+              favoritesOnly={favoritesOnly}
+              forceExpanded={activeWing === "featured"}
+            />
+          </>
+        )}
 
-        <HackathonSection
-          searchQuery={searchQuery}
-          onSelectTag={handleToggleTag}
-          likedIds={likedIds}
-          onToggleLike={handleToggleLike}
-          onInspectDossier={handleInspectHackathon}
-        />
+        {(activeWing === "all" || activeWing === "hackathons") && (
+          <HackathonSection
+            searchQuery={searchQuery}
+            onSelectTag={handleToggleTag}
+            likedIds={likedIds}
+            onToggleLike={handleToggleLike}
+            onInspectProduct={handleInspectHackathonProduct}
+            viewMode={viewMode}
+            favoritesOnly={favoritesOnly}
+            forceExpanded={activeWing === "hackathons"}
+          />
+        )}
 
-        <AIContestSection
-          searchQuery={searchQuery}
-          onSelectTag={handleToggleTag}
-          likedIds={likedIds}
-          onToggleLike={handleToggleLike}
-          onInspectDossier={handleInspectAIContest}
-        />
+        {(activeWing === "all" || activeWing === "ai-contests") && (
+          <AIContestSection
+            searchQuery={searchQuery}
+            onSelectTag={handleToggleTag}
+            likedIds={likedIds}
+            onToggleLike={handleToggleLike}
+            onInspectDossier={handleInspectAIContest}
+            viewMode={viewMode}
+            favoritesOnly={favoritesOnly}
+          />
+        )}
 
-        <SourceAtlasSection
-          selectedSection={sourceSection}
-          onSelectSection={setSourceSection}
-          searchQuery={searchQuery}
-          onSelectTag={handleToggleTag}
-          likedIds={likedIds}
-          onToggleLike={handleToggleLike}
-        />
+        {(activeWing === "all" || activeWing === "sources") && (
+          <SourceAtlasSection
+            selectedSection={sourceSection}
+            onSelectSection={setSourceSection}
+            searchQuery={searchQuery}
+            onSelectTag={handleToggleTag}
+            likedIds={likedIds}
+            onToggleLike={handleToggleLike}
+            viewMode={viewMode}
+            favoritesOnly={favoritesOnly}
+            forceExpanded={activeWing === "sources"}
+          />
+        )}
       </main>
 
       {/* Curatorial Folio Modal */}

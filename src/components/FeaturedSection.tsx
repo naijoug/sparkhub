@@ -11,7 +11,12 @@ interface FeaturedSectionProps {
   onSelectTag?: (tag: string) => void;
   likedIds?: string[];
   onToggleLike?: (id: string) => void;
+  viewMode?: "comfort" | "compact";
+  favoritesOnly?: boolean;
+  forceExpanded?: boolean;
 }
+
+const INITIAL_VISIBLE_COUNT = 6;
 
 export default function FeaturedSection({
   activeCategory = "all",
@@ -19,8 +24,12 @@ export default function FeaturedSection({
   onSelectTag,
   likedIds = [],
   onToggleLike,
+  viewMode = "comfort",
+  favoritesOnly = false,
+  forceExpanded = false,
 }: FeaturedSectionProps) {
   const [selectedCard, setSelectedCard] = useState<DesignCardType | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -34,8 +43,23 @@ export default function FeaturedSection({
       card.author.toLowerCase().includes(normalizedQuery) ||
       card.medium.toLowerCase().includes(normalizedQuery) ||
       card.tags.some((t) => t.label.toLowerCase().includes(normalizedQuery));
-    return matchesCategory && matchesQuery;
+    const matchesFavorite = !favoritesOnly || likedIds.includes(card.id);
+    return matchesCategory && matchesQuery && matchesFavorite;
   });
+
+  const canCollapse =
+    !forceExpanded &&
+    activeCategory === "all" &&
+    !normalizedQuery &&
+    !favoritesOnly &&
+    filteredCards.length > INITIAL_VISIBLE_COUNT;
+
+  const visibleCards =
+    canCollapse && !isExpanded
+      ? filteredCards.slice(0, INITIAL_VISIBLE_COUNT)
+      : filteredCards;
+
+  const isCompact = viewMode === "compact";
 
   const selectedIndex = selectedCard
     ? filteredCards.findIndex((c) => c.id === selectedCard.id)
@@ -102,22 +126,49 @@ export default function FeaturedSection({
         {/* Asymmetric Museum Wall Grid */}
         {filteredCards.length === 0 ? (
           <div className="py-14 text-center text-sm text-muted bg-surface rounded-2xl border border-border">
-            当前筛选条件下暂无常设馆藏作品，请尝试切换上方展馆分类或清空检索词。
+            {favoritesOnly
+              ? "常设馆藏中暂无已收藏作品，点击展品卡片右下角的「♡ 收藏」即可加入。"
+              : "当前筛选条件下暂无常设馆藏作品，请尝试切换上方展馆分类或清空检索词。"}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-            {filteredCards.map((card) => (
-              <DesignCard
-                key={card.id}
-                card={card}
-                liked={likedIds.includes(card.id)}
-                onToggleLike={onToggleLike}
-                onSelectCard={(item) => setSelectedCard(item)}
-                onSelectTag={onSelectTag}
-                activeSearchQuery={searchQuery}
-              />
-            ))}
-          </div>
+          <>
+            <div
+              className={`grid grid-cols-1 md:grid-cols-2 ${
+                isCompact ? "lg:grid-cols-4 gap-4" : "lg:grid-cols-3 gap-7"
+              }`}
+            >
+              {visibleCards.map((card) => (
+                <DesignCard
+                  key={card.id}
+                  card={card}
+                  liked={likedIds.includes(card.id)}
+                  onToggleLike={onToggleLike}
+                  onSelectCard={(item) => setSelectedCard(item)}
+                  onSelectTag={onSelectTag}
+                  activeSearchQuery={searchQuery}
+                  compact={isCompact}
+                />
+              ))}
+            </div>
+
+            {canCollapse && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded((prev) => !prev)}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-border bg-surface hover:border-dark hover:bg-dark hover:text-surface text-xs font-mono-meta text-dark transition-all cursor-pointer shadow-xs"
+                >
+                  <span>
+                    {isExpanded
+                      ? "收起部分常设馆藏 ↑"
+                      : `展开全部 ${filteredCards.length} 件常设馆藏 (还有 ${
+                          filteredCards.length - INITIAL_VISIBLE_COUNT
+                        } 件) ↓`}
+                  </span>
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -265,7 +316,11 @@ export default function FeaturedSection({
                         : "bg-bg-light text-secondary border-border hover:border-dark"
                     }`}
                   >
-                    <span>{likedIds.includes(selectedCard.id) ? "♥ SAVED" : "♡ APPRECIATE"}</span>
+                    <span>
+                      {likedIds.includes(selectedCard.id)
+                        ? "♥ SAVED · 已收藏"
+                        : "♡ APPRECIATE · 收藏"}
+                    </span>
                     <span>
                       ({likedIds.includes(selectedCard.id) ? `${selectedCard.likes}+` : selectedCard.likes})
                     </span>

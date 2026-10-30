@@ -175,7 +175,7 @@ export default function CurationDossierModal({
                     onSelectTag?.(tag);
                     onClose();
                   }}
-                  className="text-xs font-mono-meta px-2.5 py-1 rounded-full bg-bg-card text-secondary hover:bg-dark hover:text-white transition-colors cursor-pointer border border-border"
+                  className="text-xs font-mono-meta px-2.5 py-1 rounded-full bg-bg-card text-secondary hover:bg-dark hover:text-surface transition-colors cursor-pointer border border-border"
                 >
                   #{tag}
                 </button>

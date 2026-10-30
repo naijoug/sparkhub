@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   inspirationSources,
   sourceSections,
@@ -16,7 +16,12 @@ interface SourceAtlasSectionProps {
   onSelectTag?: (tag: string) => void;
   likedIds?: string[];
   onToggleLike?: (id: string) => void;
+  viewMode?: "comfort" | "compact";
+  favoritesOnly?: boolean;
+  forceExpanded?: boolean;
 }
+
+const INITIAL_VISIBLE_COUNT = 12;
 
 export default function SourceAtlasSection({
   selectedSection,
@@ -25,11 +30,32 @@ export default function SourceAtlasSection({
   onSelectTag,
   likedIds = [],
   onToggleLike,
+  viewMode = "comfort",
+  favoritesOnly = false,
+  forceExpanded = false,
 }: SourceAtlasSectionProps) {
-  const filteredSources = useMemo(
-    () => filterSources(searchQuery, selectedSection),
-    [searchQuery, selectedSection]
-  );
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const filteredSources = useMemo(() => {
+    const base = filterSources(searchQuery, selectedSection);
+    return favoritesOnly
+      ? base.filter((s) => likedIds.includes(s.id))
+      : base;
+  }, [searchQuery, selectedSection, favoritesOnly, likedIds]);
+
+  const canCollapse =
+    !forceExpanded &&
+    selectedSection === "all" &&
+    !searchQuery.trim() &&
+    !favoritesOnly &&
+    filteredSources.length > INITIAL_VISIBLE_COUNT;
+
+  const visibleSources =
+    canCollapse && !isExpanded
+      ? filteredSources.slice(0, INITIAL_VISIBLE_COUNT)
+      : filteredSources;
+
+  const isCompact = viewMode === "compact";
 
   const activeSectionMeta = useMemo(() => {
     if (selectedSection === "all" || selectedSection === "core") return null;
@@ -167,110 +193,143 @@ export default function SourceAtlasSection({
         {/* Source Cards Grid */}
         {filteredSources.length === 0 ? (
           <div className="py-14 text-center text-sm text-muted bg-surface rounded-2xl border border-border">
-            暂无匹配“{searchQuery}”的灵感信源，请尝试切换上方类别或重置搜索词。
+            {favoritesOnly
+              ? "灵感信源图谱中暂无已收藏站点，点击站点卡片右上角的「♡ 收藏」即可加入。"
+              : `暂无匹配“${searchQuery}”的灵感信源，请尝试切换上方类别或重置搜索词。`}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredSources.map((source) => {
-              const isLiked = likedIds.includes(source.id);
-              const diet = dietMeta[source.diet];
+          <>
+            <div
+              className={`grid grid-cols-1 md:grid-cols-2 ${
+                isCompact ? "lg:grid-cols-4 gap-4" : "lg:grid-cols-3 gap-5"
+              }`}
+            >
+              {visibleSources.map((source) => {
+                const isLiked = likedIds.includes(source.id);
+                const diet = dietMeta[source.diet];
 
-              return (
-                <div
-                  key={source.id}
-                  className="group relative flex flex-col justify-between bg-surface rounded-2xl border border-border p-5 hover:border-dark/40 hover:shadow-[0_8px_24px_rgba(20,19,18,0.06)] hover:-translate-y-0.5 transition-all text-left"
-                >
-                  <div className="space-y-3">
-                    {/* Top Row: Name, Core Badge, Bookmark */}
-                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-border/60">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-editorial text-lg font-bold text-dark group-hover:text-accent transition-colors">
-                            {source.name}
-                          </h4>
-                          {source.core && (
-                            <span className="px-1.5 py-0.2 rounded bg-accent-light text-accent text-[9px] font-mono-meta border border-accent/25">
-                              ★ 核心站
+                return (
+                  <div
+                    key={source.id}
+                    className={`group relative flex flex-col justify-between bg-surface rounded-2xl border border-border ${
+                      isCompact ? "p-4" : "p-5"
+                    } hover:border-dark/40 hover:shadow-[0_8px_24px_rgba(20,19,18,0.06)] hover:-translate-y-0.5 transition-all text-left`}
+                  >
+                    <div className="space-y-3">
+                      {/* Top Row: Name, Core Badge, Bookmark */}
+                      <div className="flex items-start justify-between gap-3 pb-3 border-b border-border/60">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-editorial text-lg font-bold text-dark group-hover:text-accent transition-colors">
+                              {source.name}
+                            </h4>
+                            {source.core && (
+                              <span className="px-1.5 py-0.2 rounded bg-accent-light text-accent text-[9px] font-mono-meta border border-accent/25">
+                                ★ 核心站
+                              </span>
+                            )}
+                          </div>
+                          {source.group && !isCompact && (
+                            <span className="text-[10px] font-mono-meta text-muted">
+                              GROUP · {source.group}
                             </span>
                           )}
                         </div>
-                        {source.group && (
-                          <span className="text-[10px] font-mono-meta text-muted">
-                            GROUP · {source.group}
-                          </span>
-                        )}
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => onToggleLike?.(source.id)}
+                            aria-pressed={isLiked}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-mono-meta transition-colors cursor-pointer ${
+                              isLiked
+                                ? "bg-accent text-white border-accent font-semibold"
+                                : "bg-bg-light border-border text-secondary hover:text-dark hover:border-dark"
+                            }`}
+                            aria-label={`收藏 ${source.name}`}
+                          >
+                            <span>{isLiked ? "♥ 已收藏" : "♡ 收藏"}</span>
+                          </button>
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-bg-light border border-border text-[10px] font-mono-meta text-secondary hover:bg-dark hover:text-surface hover:border-dark transition-colors"
+                            title="访问信源原站"
+                          >
+                            <span>访问</span>
+                            <span>↗</span>
+                          </a>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => onToggleLike?.(source.id)}
-                          className={`p-1.5 rounded-full border text-xs transition-colors cursor-pointer ${
-                            isLiked
-                              ? "bg-accent text-white border-accent"
-                              : "bg-bg-light border-border text-muted hover:text-dark hover:border-dark"
-                          }`}
-                          aria-label={`收藏 ${source.name}`}
-                        >
-                          {isLiked ? "♥" : "♡"}
-                        </button>
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-bg-light border border-border text-[10px] font-mono-meta text-secondary hover:bg-dark hover:text-surface hover:border-dark transition-colors"
-                          title="访问信源原站"
-                        >
-                          <span>访问</span>
-                          <span>↗</span>
-                        </a>
-                      </div>
-                    </div>
-
-                    {/* Summary */}
-                    <p className="text-xs text-secondary leading-[1.75]">
-                      {source.summary}
-                    </p>
-
-                    {/* Caveat or license if any */}
-                    {source.caveat && (
-                      <p className="text-[10px] text-amber-700 bg-amber-50/80 px-2.5 py-1 rounded border border-amber-200/60 font-mono-meta">
-                        ⚠ {source.caveat}
+                      {/* Summary */}
+                      <p
+                        className={`text-xs text-secondary leading-[1.75] ${
+                          isCompact ? "line-clamp-2" : ""
+                        }`}
+                      >
+                        {source.summary}
                       </p>
-                    )}
 
-                    {/* Focus tags */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {source.focus.map((f) => (
-                        <button
-                          key={f}
-                          type="button"
-                          onClick={() => onSelectTag?.(f)}
-                          className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-bg-light text-secondary hover:bg-dark hover:text-white transition-colors cursor-pointer"
-                        >
-                          #{f}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Card Bottom Meta Bar */}
-                  <div className="mt-4 pt-3 border-t border-border/70 flex items-center justify-between text-[10px] font-mono-meta text-muted">
-                    <span className="text-dark/80 font-medium">
-                      {diet.label}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {source.platforms && (
-                        <span>{source.platforms.join(" / ")}</span>
+                      {/* Caveat or license if any */}
+                      {source.caveat && !isCompact && (
+                        <p className="text-[10px] text-yellow bg-yellow-light px-2.5 py-1 rounded border border-yellow/30 font-mono-meta">
+                          ⚠ {source.caveat}
+                        </p>
                       )}
-                      <span>·</span>
-                      <span className="text-accent">{source.cadence}</span>
+
+                      {/* Focus tags */}
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {source.focus.map((f) => (
+                          <button
+                            key={f}
+                            type="button"
+                            onClick={() => onSelectTag?.(f)}
+                            className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-bg-light text-secondary hover:bg-dark hover:text-surface transition-colors cursor-pointer"
+                          >
+                            #{f}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Card Bottom Meta Bar */}
+                    <div className="mt-4 pt-3 border-t border-border/70 flex items-center justify-between text-[10px] font-mono-meta text-muted">
+                      <span className="text-dark/80 font-medium">
+                        {diet.label}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {source.platforms && !isCompact && (
+                          <span>{source.platforms.join(" / ")}</span>
+                        )}
+                        {!isCompact && <span>·</span>}
+                        <span className="text-accent">{source.cadence}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+
+            {canCollapse && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded((prev) => !prev)}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-border bg-surface hover:border-dark hover:bg-dark hover:text-surface text-xs font-mono-meta text-dark transition-all cursor-pointer shadow-xs"
+                >
+                  <span>
+                    {isExpanded
+                      ? "收起部分灵感信源 ↑"
+                      : `展开全部 ${filteredSources.length} 个灵感信源 (还有 ${
+                          filteredSources.length - INITIAL_VISIBLE_COUNT
+                        } 个) ↓`}
+                  </span>
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

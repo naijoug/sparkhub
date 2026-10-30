@@ -1,21 +1,59 @@
 @import "tailwindcss";
 
+:root {
+  --sh-accent: #C8432B;
+  --sh-accent-light: #F9EAE6;
+  --sh-purple: #4A3BC2;
+  --sh-purple-light: #EEEBFA;
+  --sh-green: #245E47;
+  --sh-green-light: #E5F1EC;
+  --sh-yellow: #B87B18;
+  --sh-yellow-light: #FBF1DF;
+  --sh-dark: #141312;
+  --sh-secondary: #4E4A44;
+  --sh-muted: #827B70;
+  --sh-border: #DDD5C7;
+  --sh-bg-light: #F6F2E9;
+  --sh-bg-card: #EDE7DA;
+  --sh-surface: #FCFBF7;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --sh-accent: #E85D44;
+  --sh-accent-light: #2D1815;
+  --sh-purple: #8E7FF5;
+  --sh-purple-light: #1F1B36;
+  --sh-green: #42A67E;
+  --sh-green-light: #132820;
+  --sh-yellow: #DF9E30;
+  --sh-yellow-light: #2A2112;
+  --sh-dark: #F3EFE6;
+  --sh-secondary: #B8B0A2;
+  --sh-muted: #8A8275;
+  --sh-border: #2C2925;
+  --sh-bg-light: #11100F;
+  --sh-bg-card: #1A1816;
+  --sh-surface: #181614;
+  color-scheme: dark;
+}
+
 @theme inline {
-  --color-accent: #C8432B;
-  --color-accent-light: #F9EAE6;
-  --color-purple: #4A3BC2;
-  --color-purple-light: #EEEBFA;
-  --color-green: #245E47;
-  --color-green-light: #E5F1EC;
-  --color-yellow: #B87B18;
-  --color-yellow-light: #FBF1DF;
-  --color-dark: #141312;
-  --color-secondary: #4E4A44;
-  --color-muted: #827B70;
-  --color-border: #DDD5C7;
-  --color-bg-light: #F6F2E9;
-  --color-bg-card: #EDE7DA;
-  --color-surface: #FCFBF7;
+  --color-accent: var(--sh-accent);
+  --color-accent-light: var(--sh-accent-light);
+  --color-purple: var(--sh-purple);
+  --color-purple-light: var(--sh-purple-light);
+  --color-green: var(--sh-green);
+  --color-green-light: var(--sh-green-light);
+  --color-yellow: var(--sh-yellow);
+  --color-yellow-light: var(--sh-yellow-light);
+  --color-dark: var(--sh-dark);
+  --color-secondary: var(--sh-secondary);
+  --color-muted: var(--sh-muted);
+  --color-border: var(--sh-border);
+  --color-bg-light: var(--sh-bg-light);
+  --color-bg-card: var(--sh-bg-card);
+  --color-surface: var(--sh-surface);
   --font-sans: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", "Instrument Serif", "Cormorant Garamond", "Songti SC", "STSong", "Noto Serif SC", Georgia, serif;
   --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -36,6 +74,16 @@ body {
     linear-gradient(to right, rgba(221, 213, 199, 0.42) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(221, 213, 199, 0.42) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 100% 100%, 72px 72px, 72px 72px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html[data-theme="dark"] body {
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(232, 93, 68, 0.08), transparent 38%),
+    radial-gradient(circle at 88% 22%, rgba(142, 127, 245, 0.07), transparent 42%),
+    radial-gradient(circle at 50% 65%, rgba(223, 158, 48, 0.05), transparent 50%),
+    linear-gradient(to right, rgba(44, 41, 37, 0.48) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(44, 41, 37, 0.48) 1px, transparent 1px);
 }
 
 .font-editorial {
@@ -60,6 +108,10 @@ body {
   border: 1px solid rgba(20, 19, 18, 0.07);
   pointer-events: none;
   border-radius: inherit;
+}
+
+html[data-theme="dark"] .art-frame::before {
+  border-color: rgba(243, 239, 230, 0.08);
 }
 
 /* Museum catalog stamp effect */

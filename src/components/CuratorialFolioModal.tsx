@@ -8,6 +8,7 @@ import {
   featuredCards,
   hackathonCards,
 } from "@/lib/data";
+import { allHackathonProducts } from "@/lib/hackathons";
 import { inspirationSources } from "@/lib/sources";
 
 interface FolioItem {
@@ -89,7 +90,24 @@ export default function CuratorialFolioModal({
       }
     });
 
-    // Hackathons
+    // Hackathons & Top-Voted Products
+    allHackathonProducts.forEach((p) => {
+      if (likedIds.includes(p.id)) {
+        list.push({
+          id: p.id,
+          type: "hackathon",
+          typeLabel: "黑客松造物",
+          catalogNo: p.catalogNo,
+          title: p.title,
+          authorOrHost: `${p.team.name} · ${p.hackathonName}`,
+          summary: p.summary,
+          tags: [p.targetPlatform, ...p.techStack.slice(0, 2)],
+          href: p.officialUrl,
+          accent: "accent",
+        });
+      }
+    });
+
     hackathonCards.forEach((h) => {
       if (likedIds.includes(h.id)) {
         list.push({
@@ -364,7 +382,7 @@ export default function CuratorialFolioModal({
                           onSelectTag?.(tag);
                           onClose();
                         }}
-                        className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-bg-card/75 text-secondary hover:bg-dark hover:text-white transition-colors cursor-pointer"
+                        className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-bg-card/75 text-secondary hover:bg-dark hover:text-surface transition-colors cursor-pointer"
                       >
                         #{tag}
                       </button>
@@ -378,7 +396,7 @@ export default function CuratorialFolioModal({
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-border bg-surface hover:bg-dark hover:text-white text-xs font-mono-meta text-dark transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-border bg-surface hover:bg-dark hover:text-surface text-xs font-mono-meta text-dark transition-colors"
                     >
                       <span>访问原站</span>
                       <span>↗</span>

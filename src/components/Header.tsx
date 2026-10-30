@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTheme } from "@/lib/useTheme";
 
 const navItems = [
   { no: "01", label: "策展序厅", en: "INDEX", href: "#top", sectionId: "top" },
@@ -47,6 +48,7 @@ interface HeaderProps {
   savedCount?: number;
   onOpenFolio?: () => void;
   onRandomSerendipity?: () => void;
+  onNavigateSection?: (sectionId: string) => void;
 }
 
 export default function Header({
@@ -55,9 +57,11 @@ export default function Header({
   savedCount = 0,
   onOpenFolio,
   onRandomSerendipity,
+  onNavigateSection,
 }: HeaderProps) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [activeSection, setActiveSection] = useState("top");
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     const elements = navItems
@@ -134,6 +138,7 @@ export default function Header({
                 <a
                   key={item.label}
                   href={item.href}
+                  onClick={() => onNavigateSection?.(item.sectionId)}
                   aria-current={isActive ? "location" : undefined}
                   className={`group relative flex flex-col py-1 transition-colors ${
                     isActive
@@ -164,11 +169,11 @@ export default function Header({
           </nav>
         </div>
 
-        {/* Right: Archival Index Search + Folio + Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right: Archival Index Search + Folio + Theme + Actions */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Search Bar */}
           <div
-            className={`flex items-center gap-2.5 w-[160px] sm:w-[220px] md:w-[260px] h-10 px-3.5 rounded-full border transition-all ${
+            className={`flex items-center gap-2 w-[150px] sm:w-[210px] md:w-[250px] h-10 px-3.5 rounded-full border transition-all ${
               searchFocused
                 ? "bg-surface border-dark shadow-[0_4px_18px_rgba(20,19,18,0.08)]"
                 : "bg-bg-card/75 border-border hover:border-dark/35"
@@ -208,27 +213,31 @@ export default function Header({
               type="button"
               onClick={onRandomSerendipity}
               title="灵感漫步 · 随机抽选馆藏"
-              className="inline-flex items-center gap-1.5 h-10 px-3 sm:px-3.5 rounded-full border border-border bg-bg-card/65 hover:bg-surface hover:border-dark text-xs font-mono-meta text-dark transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 h-10 px-3 rounded-full border border-border bg-bg-card/65 hover:bg-surface hover:border-dark text-xs font-mono-meta text-dark transition-colors cursor-pointer"
             >
               <span>🎲</span>
               <span className="hidden lg:inline text-[11px]">灵感漫步</span>
             </button>
           )}
 
-          {/* Curatorial Folio Modal Button */}
+          {/* Curatorial Folio / Favorites Modal Button */}
           {onOpenFolio && (
             <button
               type="button"
               onClick={onOpenFolio}
               title="打开我的策展画夹"
-              className="inline-flex items-center gap-1.5 h-10 px-3 sm:px-3.5 rounded-full border border-border bg-surface hover:border-dark text-xs font-mono-meta text-dark transition-colors cursor-pointer"
+              className={`inline-flex items-center gap-1.5 h-10 px-3 sm:px-3.5 rounded-full border text-xs font-mono-meta transition-colors cursor-pointer ${
+                savedCount > 0
+                  ? "border-accent/45 bg-accent-light/60 text-dark hover:border-accent"
+                  : "border-border bg-surface hover:border-dark text-dark"
+              }`}
             >
               <span className={savedCount > 0 ? "text-accent" : "text-muted"}>♥</span>
-              <span className="hidden sm:inline text-[11px]">FOLIO</span>
+              <span className="hidden sm:inline text-[11px] font-medium">我的收藏</span>
               <span
                 className={`px-1.5 py-0.2 rounded-full text-[10px] ${
                   savedCount > 0
-                    ? "bg-accent-light text-accent font-semibold"
+                    ? "bg-accent text-white font-semibold"
                     : "bg-bg-card text-muted"
                 }`}
               >
@@ -237,9 +246,24 @@ export default function Header({
             </button>
           )}
 
+          {/* Theme Toggle (Light / Dark Mode) */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label="切换深色或浅色模式"
+            title={isDark ? "切换为浅色纸本模式" : "切换为深色暗房模式"}
+            className="inline-flex items-center gap-1.5 h-10 px-3 rounded-full border border-border bg-surface hover:border-dark text-xs font-mono-meta text-dark transition-colors cursor-pointer"
+          >
+            <span aria-hidden="true">{isDark ? "☀️" : "🌙"}</span>
+            <span className="hidden md:inline text-[11px]">
+              {isDark ? "浅色" : "深色"}
+            </span>
+          </button>
+
           <a
             href="#daily-curations"
-            className="hidden sm:inline-flex items-center gap-1.5 h-10 px-4 bg-dark hover:bg-accent text-surface text-[12px] font-mono-meta uppercase rounded-full transition-colors"
+            onClick={() => onNavigateSection?.("daily-curations")}
+            className="hidden sm:inline-flex items-center gap-1.5 h-10 px-4 bg-dark hover:bg-accent text-surface hover:text-white text-[12px] font-mono-meta uppercase rounded-full transition-colors"
           >
             <span>今日特刊</span>
             <span className="text-xs">↗</span>
@@ -258,6 +282,7 @@ export default function Header({
             <a
               key={item.sectionId}
               href={item.href}
+              onClick={() => onNavigateSection?.(item.sectionId)}
               className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border transition-colors ${
                 isActive
                   ? "bg-dark text-surface border-dark"
