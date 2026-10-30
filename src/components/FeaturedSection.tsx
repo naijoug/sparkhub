@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { featuredCards, DesignCard as DesignCardType } from "@/lib/data";
+import Modal from "./Modal";
 import DesignCard, { ArtMotifGraphic } from "./DesignCard";
 
 interface FeaturedSectionProps {
@@ -42,13 +43,9 @@ export default function FeaturedSection({
 
   useEffect(() => {
     if (!selectedCard) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setSelectedCard(null);
-      } else if (e.key === "ArrowRight" && filteredCards.length > 1) {
+      if (e.key === "ArrowRight" && filteredCards.length > 1) {
         const idx = filteredCards.findIndex((c) => c.id === selectedCard.id);
         if (idx !== -1) {
           setSelectedCard(filteredCards[(idx + 1) % filteredCards.length]);
@@ -66,7 +63,6 @@ export default function FeaturedSection({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedCard, filteredCards]);
@@ -127,20 +123,18 @@ export default function FeaturedSection({
 
       {/* Museum Exhibition Dossier Lightbox Modal */}
       {selectedCard && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="lightbox-title"
-          className="fixed inset-0 z-50 bg-dark/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
-          onClick={() => setSelectedCard(null)}
+        <Modal
+          open={Boolean(selectedCard)}
+          onClose={() => setSelectedCard(null)}
+          labelledBy="lightbox-title"
         >
           <div
-            className="bg-surface border border-dark/30 rounded-3xl max-w-3xl w-full overflow-hidden shadow-[0_24px_70px_rgba(20,19,18,0.35)] art-frame"
+            className="bg-surface border border-dark/30 rounded-3xl max-w-3xl w-full max-h-full flex flex-col overflow-hidden shadow-[0_24px_70px_rgba(20,19,18,0.35)] art-frame"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Dossier Bar */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-bg-light">
-              <div className="flex items-center gap-2.5 text-xs font-mono-meta text-muted">
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-border bg-bg-light">
+              <div className="flex min-w-0 flex-wrap items-center gap-2.5 text-xs font-mono-meta text-muted">
                 <span className="text-accent">◆</span>
                 <span className="text-dark font-semibold">
                   {selectedCard.catalogNo}
@@ -148,7 +142,7 @@ export default function FeaturedSection({
                 <span>·</span>
                 <span>{selectedCard.medium}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
                 {filteredCards.length > 1 && selectedIndex !== -1 && (
                   <div className="flex items-center gap-1 mr-1">
                     <button
@@ -192,7 +186,7 @@ export default function FeaturedSection({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12">
+            <div className="grid min-h-0 overflow-y-auto overscroll-contain grid-cols-1 md:grid-cols-12">
               {/* Left: Generative Plate View */}
               <div
                 className={`md:col-span-6 min-h-[260px] bg-gradient-to-br ${selectedCard.image} relative flex flex-col items-center justify-center p-8 text-white`}
@@ -291,7 +285,7 @@ export default function FeaturedSection({
               </div>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </section>
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import Modal from "./Modal";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   aiContestCards,
   dailyCurations,
@@ -41,24 +42,12 @@ export default function CuratorialFolioModal({
 }: CuratorialFolioModalProps) {
   const [filterType, setFilterType] = useState<string>("all");
   const [copiedExport, setCopiedExport] = useState(false);
+  const [exportError, setExportError] = useState(false);
+  const exportTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
+  useEffect(() => () => {
+    if (exportTimer.current) clearTimeout(exportTimer.current);
+  }, []);
 
   // Aggregate all bookmarked items across wings
   const allSavedItems: FolioItem[] = useMemo(() => {
@@ -165,7 +154,8 @@ export default function CuratorialFolioModal({
   const handleExportMarkdown = () => {
     if (allSavedItems.length === 0) return;
 
-    const today = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     let md = `# SparkHub 个人策展档案 · Curatorial Folio\n\n`;
     md += `> 导出日期：${today} | 典藏总量：${allSavedItems.length} 件灵感馆藏\n`;
     md += `> 来源：SparkHub 数字艺术与灵感策展志 (https://sparkhub.art)\n\n---\n\n`;
@@ -184,37 +174,42 @@ export default function CuratorialFolioModal({
       md += `\n`;
     });
 
-    // Create a downloadable blob
-    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `sparkhub-curatorial-folio-${today}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    setCopiedExport(true);
-    setTimeout(() => setCopiedExport(false), 2400);
+    setExportError(false);
+    setCopiedExport(false);
+    if (exportTimer.current) clearTimeout(exportTimer.current);
+    let url: string | undefined;
+    const link = document.createElement("a");
+    try {
+      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      url = URL.createObjectURL(blob);
+      link.href = url;
+      link.download = `sparkhub-curatorial-folio-${today}.md`;
+      document.body.appendChild(link);
+      link.click();
+      setCopiedExport(true);
+      exportTimer.current = setTimeout(() => setCopiedExport(false), 2400);
+    } catch {
+      setExportError(true);
+    } finally {
+      link.remove();
+      // Allow the browser to begin consuming the download before releasing it.
+      if (url) {
+        const downloadUrl = url;
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+      }
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="folio-title"
-      className="fixed inset-0 z-50 bg-dark/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
-      onClick={onClose}
-    >
+    <Modal open={isOpen} onClose={onClose} labelledBy="folio-title">
       <div
-        className="bg-surface border border-dark/30 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-[0_24px_70px_rgba(20,19,18,0.35)] art-frame"
+        className="bg-surface border border-dark/30 rounded-3xl max-w-4xl w-full max-h-full flex flex-col overflow-hidden shadow-[0_24px_70px_rgba(20,19,18,0.35)] art-frame"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Folio Modal Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-bg-light/90">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-5 border-b border-border bg-bg-light/90">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5 text-xs font-mono-meta text-muted">
               <span className="w-2 h-2 rounded-full bg-accent" />
@@ -237,7 +232,7 @@ export default function CuratorialFolioModal({
               <button
                 type="button"
                 onClick={handleExportMarkdown}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-dark hover:bg-accent text-surface text-xs font-mono-meta uppercase transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-dark hover:bg-accent text-surface text-xs font-mono-meta uppercase transition-colors cursor-pointer"
               >
                 <span>{copiedExport ? "✓ 已导出 MARKDOWN" : "↓ 导出策展笔记"}</span>
               </button>
@@ -254,7 +249,12 @@ export default function CuratorialFolioModal({
         </div>
 
         {/* Filter Tabs Bar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-border/80 bg-surface text-xs">
+        {exportError && (
+          <p role="alert" className="px-6 py-2 text-sm text-accent">
+            导出失败，请重试。
+          </p>
+        )}
+        <div className="flex shrink-0 items-center justify-between px-4 sm:px-6 py-3 border-b border-border/80 bg-surface text-xs">
           <div className="flex items-center gap-2 overflow-x-auto">
             {[
               { id: "all", label: "全部", count: allSavedItems.length },
@@ -321,7 +321,7 @@ export default function CuratorialFolioModal({
         </div>
 
         {/* Items List */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-4">
+        <div className="p-6 min-h-0 overflow-y-auto overscroll-contain flex-1 space-y-4">
           {displayedItems.length === 0 ? (
             <div className="py-16 text-center space-y-3">
               <div className="w-12 h-12 rounded-full border border-dashed border-border mx-auto flex items-center justify-center text-muted font-editorial italic text-lg">
@@ -399,7 +399,7 @@ export default function CuratorialFolioModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-border bg-bg-light/80 flex items-center justify-between text-xs font-mono-meta text-muted">
+        <div className="px-4 sm:px-6 py-4 border-t border-border bg-bg-light/80 flex shrink-0 flex-wrap gap-2 items-center justify-between text-xs font-mono-meta text-muted">
           <span>SPARKHUB DIGITAL ATELIER · LOCAL CURATION CACHE</span>
           <button
             type="button"
@@ -410,6 +410,6 @@ export default function CuratorialFolioModal({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

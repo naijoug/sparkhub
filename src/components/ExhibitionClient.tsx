@@ -21,10 +21,10 @@ import {
   DailyCurationItem,
   HackathonCard,
   AIContestCard,
+  CurationCategory,
 } from "@/lib/data";
-import { inspirationSources, matchesSourceQuery } from "@/lib/sources";
-
-const FOLIO_STORAGE_KEY = "sparkhub:curatorial-folio";
+import { filterDailyCurations, filterSources, SourceFilter } from "@/lib/filters";
+import { useCuratorialFolio } from "@/lib/useCuratorialFolio";
 
 export default function ExhibitionClient({
   children,
@@ -32,62 +32,22 @@ export default function ExhibitionClient({
   children?: React.ReactNode;
 }) {
   const [activeCategory, setActiveCategory] = useState("all");
+  const [dailyCategory, setDailyCategory] = useState<CurationCategory>("all");
+  const [sourceSection, setSourceSection] = useState<SourceFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [folioOpen, setFolioOpen] = useState(false);
   const [inspectingDossier, setInspectingDossier] =
     useState<DossierInspectItem | null>(null);
 
-  // Persistent user curatorial folio bookmarks
-  const [likedIds, setLikedIds] = useState<string[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      const saved = window.localStorage.getItem(FOLIO_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch {
-      // Ignore storage read error
-    }
-    return [];
-  });
-
-  const handleToggleLike = (id: string) => {
-    setLikedIds((prev) => {
-      const next = prev.includes(id)
-        ? prev.filter((item) => item !== id)
-        : [...prev, id];
-      try {
-        window.localStorage.setItem(FOLIO_STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // Ignore storage write error
-      }
-      return next;
-    });
-  };
-
-  const handleClearAllLikes = () => {
-    setLikedIds([]);
-    try {
-      window.localStorage.removeItem(FOLIO_STORAGE_KEY);
-    } catch {
-      // Ignore storage write error
-    }
-  };
+  const { likedIds, toggleLike: handleToggleLike, clearLikes: handleClearAllLikes } =
+    useCuratorialFolio();
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
   const searchStats = useMemo(() => {
     if (!normalizedQuery) return null;
 
-    const dailyCount = dailyCurations.filter(
-      (item) =>
-        item.title.toLowerCase().includes(normalizedQuery) ||
-        item.summary.toLowerCase().includes(normalizedQuery) ||
-        item.curatorNote.toLowerCase().includes(normalizedQuery) ||
-        item.sourceName.toLowerCase().includes(normalizedQuery) ||
-        item.tags.some((t) => t.toLowerCase().includes(normalizedQuery))
-    ).length;
+    const dailyCount = filterDailyCurations(normalizedQuery, dailyCategory).length;
 
     const featuredCount = featuredCards.filter(
       (card) =>
@@ -119,9 +79,7 @@ export default function ExhibitionClient({
         (card.tags && card.tags.some((t) => t.toLowerCase().includes(normalizedQuery)))
     ).length;
 
-    const sourceCount = inspirationSources.filter((s) =>
-      matchesSourceQuery(s, normalizedQuery)
-    ).length;
+    const sourceCount = filterSources(normalizedQuery, sourceSection).length;
 
     return {
       total: dailyCount + featuredCount + hackathonCount + aiCount + sourceCount,
@@ -131,7 +89,7 @@ export default function ExhibitionClient({
       aiCount,
       sourceCount,
     };
-  }, [normalizedQuery, activeCategory]);
+  }, [normalizedQuery, activeCategory, dailyCategory, sourceSection]);
 
   const handleToggleTag = (tag: string) => {
     setSearchQuery((prev) =>
@@ -188,7 +146,7 @@ export default function ExhibitionClient({
   };
 
   const handleRandomSerendipity = () => {
-    // Select a random masterpiece across all collections
+    // Random discovery covers daily curations, hackathons, and AI exhibits.
     const collections = [
       ...dailyCurations.map((i) => ({ type: "daily" as const, item: i })),
       ...hackathonCards.map((i) => ({ type: "hackathon" as const, item: i })),
@@ -281,6 +239,8 @@ export default function ExhibitionClient({
         )}
 
         <DailyCurationsSection
+          selectedTab={dailyCategory}
+          onSelectTab={setDailyCategory}
           searchQuery={searchQuery}
           onSelectTag={handleToggleTag}
           likedIds={likedIds}
@@ -319,6 +279,8 @@ export default function ExhibitionClient({
         />
 
         <SourceAtlasSection
+          selectedSection={sourceSection}
+          onSelectSection={setSourceSection}
           searchQuery={searchQuery}
           onSelectTag={handleToggleTag}
           likedIds={likedIds}
@@ -338,6 +300,7 @@ export default function ExhibitionClient({
 
       {/* Unified Curation Inspection Lightbox Modal */}
       <CurationDossierModal
+        key={inspectingDossier?.id ?? "closed"}
         item={inspectingDossier}
         onClose={() => setInspectingDossier(null)}
         liked={Boolean(inspectingDossier && likedIds.includes(inspectingDossier.id))}

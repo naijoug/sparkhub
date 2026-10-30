@@ -1,15 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   inspirationSources,
   sourceSections,
-  SourceSectionId,
   dietMeta,
-  matchesSourceQuery,
 } from "@/lib/sources";
 
+import { filterSources, SourceFilter } from "@/lib/filters";
+
 interface SourceAtlasSectionProps {
+  selectedSection: SourceFilter;
+  onSelectSection: (section: SourceFilter) => void;
   searchQuery?: string;
   onSelectTag?: (tag: string) => void;
   likedIds?: string[];
@@ -17,29 +19,17 @@ interface SourceAtlasSectionProps {
 }
 
 export default function SourceAtlasSection({
+  selectedSection,
+  onSelectSection,
   searchQuery = "",
   onSelectTag,
   likedIds = [],
   onToggleLike,
 }: SourceAtlasSectionProps) {
-  const [selectedSection, setSelectedSection] =
-    useState<SourceSectionId | "all" | "core">("all");
-
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  const filteredSources = useMemo(() => {
-    return inspirationSources.filter((source) => {
-      const matchesSection =
-        selectedSection === "all"
-          ? true
-          : selectedSection === "core"
-            ? source.core
-            : source.sections.includes(selectedSection);
-
-      const matchesSearch = matchesSourceQuery(source, normalizedQuery);
-      return matchesSection && matchesSearch;
-    });
-  }, [selectedSection, normalizedQuery]);
+  const filteredSources = useMemo(
+    () => filterSources(searchQuery, selectedSection),
+    [searchQuery, selectedSection]
+  );
 
   const activeSectionMeta = useMemo(() => {
     if (selectedSection === "all" || selectedSection === "core") return null;
@@ -100,7 +90,7 @@ export default function SourceAtlasSection({
         <div className="flex flex-wrap items-center gap-2 pt-2">
           <button
             type="button"
-            onClick={() => setSelectedSection("all")}
+            onClick={() => onSelectSection("all")}
             className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
               selectedSection === "all"
                 ? "bg-dark text-surface border-dark shadow-sm"
@@ -115,7 +105,7 @@ export default function SourceAtlasSection({
 
           <button
             type="button"
-            onClick={() => setSelectedSection("core")}
+            onClick={() => onSelectSection("core")}
             className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
               selectedSection === "core"
                 ? "bg-accent text-white border-accent shadow-sm"
@@ -136,7 +126,7 @@ export default function SourceAtlasSection({
               <button
                 key={sec.id}
                 type="button"
-                onClick={() => setSelectedSection(sec.id)}
+                onClick={() => onSelectSection(sec.id)}
                 className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                   active
                     ? "bg-dark text-surface border-dark shadow-sm"

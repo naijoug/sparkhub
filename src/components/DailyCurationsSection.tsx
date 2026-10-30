@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { filterDailyCurations } from "@/lib/filters";
 import {
   dailyCurations,
   CurationCategory,
@@ -36,6 +36,8 @@ const accentStripe: Record<DailyCurationItem["accent"], string> = {
 };
 
 interface DailyCurationsSectionProps {
+  selectedTab: CurationCategory;
+  onSelectTab: (tab: CurationCategory) => void;
   searchQuery?: string;
   onSelectTag?: (tag: string) => void;
   likedIds?: string[];
@@ -44,28 +46,15 @@ interface DailyCurationsSectionProps {
 }
 
 export default function DailyCurationsSection({
+  selectedTab,
+  onSelectTab,
   searchQuery = "",
   onSelectTag,
   likedIds = [],
   onToggleLike,
   onInspectDossier,
 }: DailyCurationsSectionProps) {
-  const [selectedTab, setSelectedTab] = useState<CurationCategory>("all");
-
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  const filteredItems = dailyCurations.filter((item) => {
-    const matchesTab =
-      selectedTab === "all" || item.category === selectedTab;
-    const matchesQuery =
-      !normalizedQuery ||
-      item.title.toLowerCase().includes(normalizedQuery) ||
-      item.summary.toLowerCase().includes(normalizedQuery) ||
-      item.curatorNote.toLowerCase().includes(normalizedQuery) ||
-      item.sourceName.toLowerCase().includes(normalizedQuery) ||
-      item.tags.some((t) => t.toLowerCase().includes(normalizedQuery));
-    return matchesTab && matchesQuery;
-  });
+  const filteredItems = filterDailyCurations(searchQuery, selectedTab);
 
   return (
     <section
@@ -107,7 +96,7 @@ export default function DailyCurationsSection({
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setSelectedTab(tab.id)}
+                  onClick={() => onSelectTab(tab.id)}
                   className={`inline-flex items-center gap-2 h-9 px-4 rounded-full text-xs font-medium border transition-all cursor-pointer ${
                     active
                       ? "bg-dark text-surface border-dark shadow-sm"

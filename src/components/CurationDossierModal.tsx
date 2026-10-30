@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Modal from "./Modal";
+import { useEffect, useRef, useState } from "react";
 import { AccentTone } from "@/lib/data";
 
 export interface DossierInspectItem {
@@ -46,54 +47,49 @@ export default function CurationDossierModal({
   onToggleLike,
   onSelectTag,
 }: CurationDossierModalProps) {
-  const [citationCopied, setCitationCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "error">("idle");
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mounted = useRef(false);
 
   useEffect(() => {
-    if (!item) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-
+    mounted.current = true;
     return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
+      mounted.current = false;
+      if (resetTimer.current) clearTimeout(resetTimer.current);
     };
-  }, [item, onClose]);
+  }, []);
 
   if (!item) return null;
 
-  const handleCopyCitation = () => {
-    const citation = `[SparkHub 策展档案 ${item.catalogNo}] ${item.title} — ${item.authorOrHost}. 来源: ${
-      item.href ?? "SparkHub Curatorial Archive"
-    }`;
-    navigator.clipboard?.writeText(citation);
-    setCitationCopied(true);
-    setTimeout(() => setCitationCopied(false), 2200);
+  const citation = `[SparkHub 策展档案 ${item.catalogNo}] ${item.title} — ${item.authorOrHost}. 来源: ${
+    item.href ?? "SparkHub Curatorial Archive"
+  }`;
+
+  const handleCopyCitation = async () => {
+    if (resetTimer.current) clearTimeout(resetTimer.current);
+    setCopyStatus("copying");
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(citation);
+      if (!mounted.current) return;
+      setCopyStatus("copied");
+      resetTimer.current = setTimeout(() => setCopyStatus("idle"), 2200);
+    } catch {
+      if (mounted.current) setCopyStatus("error");
+    }
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="dossier-modal-title"
-      className="fixed inset-0 z-50 bg-dark/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
-      onClick={onClose}
-    >
+    <Modal open={Boolean(item)} onClose={onClose} labelledBy="dossier-modal-title">
       <div
-        className="bg-surface border border-dark/30 rounded-3xl max-w-2xl w-full overflow-hidden shadow-[0_24px_70px_rgba(20,19,18,0.35)] art-frame flex flex-col max-h-[90vh]"
+        className="bg-surface border border-dark/30 rounded-3xl max-w-2xl w-full overflow-hidden shadow-[0_24px_70px_rgba(20,19,18,0.35)] art-frame flex flex-col max-h-full"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Accent Stripe */}
         <div className={`h-1.5 w-full ${accentLineStyles[item.accent]}`} />
 
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-bg-light/85">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-border bg-bg-light/85">
           <div className="flex items-center gap-2.5 text-xs font-mono-meta text-muted">
             <span className="text-accent">◆</span>
             <span className="text-dark font-semibold">{item.catalogNo}</span>
@@ -129,7 +125,7 @@ export default function CurationDossierModal({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 sm:p-8 space-y-6 overflow-y-auto flex-1">
+        <div className="p-6 sm:p-8 space-y-6 min-h-0 overflow-y-auto overscroll-contain flex-1">
           {/* Title & Provenance */}
           <div className="space-y-2">
             <p className="text-[11px] font-mono-meta uppercase tracking-wider text-muted">
@@ -189,14 +185,30 @@ export default function CurationDossierModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-t border-border bg-bg-light/80">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-border bg-bg-light/80">
           <button
             type="button"
             onClick={handleCopyCitation}
+            disabled={copyStatus === "copying"}
             className="text-xs font-mono-meta text-muted hover:text-dark cursor-pointer transition-colors"
           >
-            {citationCopied ? "✓ 引文已复制到剪贴板" : "⎘ 复制学术引文"}
+            {copyStatus === "copying" ? "正在复制…" : "⎘ 复制学术引文"}
           </button>
+
+          <span role="status" className="text-xs text-secondary">
+            {copyStatus === "copied" && "✓ 引文已复制到剪贴板"}
+            {copyStatus === "error" && "复制失败，请在下方手动复制，或重试。"}
+          </span>
+          {copyStatus === "error" && (
+            <textarea
+              aria-label="手动复制引文"
+              readOnly
+              value={citation}
+              onFocus={(event) => event.currentTarget.select()}
+              className="w-full rounded border border-border p-2 text-xs"
+              rows={3}
+            />
+          )}
 
           <div className="flex items-center gap-3">
             {item.href && (
@@ -213,6 +225,6 @@ export default function CurationDossierModal({
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
