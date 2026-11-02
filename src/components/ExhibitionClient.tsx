@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import CategoryBar from "@/components/CategoryBar";
@@ -9,10 +10,14 @@ import FeaturedSection from "@/components/FeaturedSection";
 import HackathonSection from "@/components/HackathonSection";
 import AIContestSection from "@/components/AIContestSection";
 import SourceAtlasSection from "@/components/SourceAtlasSection";
-import CuratorialFolioModal from "@/components/CuratorialFolioModal";
-import CurationDossierModal, {
-  DossierInspectItem,
-} from "@/components/CurationDossierModal";
+import type { DossierInspectItem } from "@/components/CurationDossierModal";
+
+const CuratorialFolioModal = dynamic(
+  () => import("@/components/CuratorialFolioModal")
+);
+const CurationDossierModal = dynamic(
+  () => import("@/components/CurationDossierModal")
+);
 import {
   aiContestCards,
   dailyCurations,
@@ -65,6 +70,24 @@ const wingTabs: { id: WingId; label: string; count: number }[] = [
   { id: "sources", label: "05 信源图谱", count: inspirationSources.length },
 ];
 
+const validWings: WingId[] = [
+  "all",
+  "daily-curations",
+  "featured",
+  "hackathons",
+  "ai-contests",
+  "sources",
+];
+
+const validDailyCategories: CurationCategory[] = [
+  "all",
+  "product",
+  "event",
+  "website",
+];
+
+const validPlatforms: PlatformCategory[] = ["all", "app", "web", "ai", "cross"];
+
 export default function ExhibitionClient({
   children,
 }: {
@@ -82,6 +105,84 @@ export default function ExhibitionClient({
   const [folioOpen, setFolioOpen] = useState(false);
   const [inspectingDossier, setInspectingDossier] =
     useState<DossierInspectItem | null>(null);
+  const urlReadyRef = useRef(false);
+
+  useEffect(() => {
+    const syncFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const qParam = params.get("q");
+      setSearchQuery(qParam ?? "");
+
+      const wingParam = params.get("wing") as WingId | null;
+      setActiveWing(
+        wingParam && validWings.includes(wingParam) ? wingParam : "all"
+      );
+
+      const favParam = params.get("fav");
+      setFavoritesOnly(favParam === "1" || favParam === "true");
+
+      const dailyParam = params.get("daily") as CurationCategory | null;
+      setDailyCategory(
+        dailyParam && validDailyCategories.includes(dailyParam)
+          ? dailyParam
+          : "all"
+      );
+
+      const catParam = params.get("cat");
+      setActiveCategory(catParam || "all");
+
+      const platformParam = params.get("platform") as PlatformCategory | null;
+      setHackathonPlatform(
+        platformParam && validPlatforms.includes(platformParam)
+          ? platformParam
+          : "all"
+      );
+
+      const sourceParam = params.get("source") as SourceFilter | null;
+      setSourceSection(sourceParam || "all");
+    };
+
+    if (window.location.search) {
+      syncFromUrl();
+    }
+
+    window.addEventListener("popstate", syncFromUrl);
+    return () => window.removeEventListener("popstate", syncFromUrl);
+  }, []);
+
+  useEffect(() => {
+    if (!urlReadyRef.current) {
+      urlReadyRef.current = true;
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("q", searchQuery);
+    if (activeWing !== "all") params.set("wing", activeWing);
+    if (favoritesOnly) params.set("fav", "1");
+    if (dailyCategory !== "all") params.set("daily", dailyCategory);
+    if (activeCategory !== "all") params.set("cat", activeCategory);
+    if (hackathonPlatform !== "all") params.set("platform", hackathonPlatform);
+    if (sourceSection !== "all") params.set("source", sourceSection);
+
+    const searchStr = params.toString();
+    const nextUrl = `${window.location.pathname}${
+      searchStr ? `?${searchStr}` : ""
+    }${window.location.hash}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(null, "", nextUrl);
+    }
+  }, [
+    searchQuery,
+    activeWing,
+    favoritesOnly,
+    dailyCategory,
+    activeCategory,
+    hackathonPlatform,
+    sourceSection,
+  ]);
 
   const { likedIds, toggleLike: handleToggleLike, clearLikes: handleClearAllLikes } =
     useCuratorialFolio();

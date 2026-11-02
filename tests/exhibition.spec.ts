@@ -249,3 +249,38 @@ test("quick view bar progressive disclosure, wing focus, compact view and favori
   await expect(page.locator("#featured h3")).toHaveCount(1);
   await expect(page.locator("#daily-curations h3")).toHaveCount(0);
 });
+
+test("telemetry bar syncs with hackathon platform filter, favorites-only filter, and URL state", async ({ page }) => {
+  // Bookmark one featured item and filter by favoritesOnly + search query
+  await page.getByRole("button", { name: `收藏 ${featuredTitle}`, exact: true }).click();
+  const toolbar = page.getByRole("region", { name: "快捷浏览与视图控制栏" });
+  await toolbar.getByRole("button", { name: /只看已收藏/ }).click();
+
+  const search = page.getByRole("textbox", { name: "全馆检索", exact: true });
+  await search.fill("2026");
+  await expect(page.locator("main [role=status]")).toContainText("共命中 0");
+
+  await search.fill("FinTech");
+  await expect(page.locator("main [role=status]")).toContainText("共命中 1");
+  await expect(page.locator("main [role=status]")).toContainText("常设展 [1]");
+
+  // URL query parameters reflect current filter state and survive reload
+  await expect(page).toHaveURL(/\?q=FinTech&fav=1/);
+  await page.reload();
+  await expect(search).toHaveValue("FinTech");
+  await expect(toolbar.getByRole("button", { name: /只看已收藏/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("main [role=status]")).toContainText("共命中 1");
+});
+
+test("product detail page supports bookmarking and theme toggle", async ({ page }) => {
+  await page.goto("/products/jayu-ai-assistant");
+  const initialTheme = await page.locator("html").getAttribute("data-theme");
+  await page.getByRole("button", { name: "切换深色或浅色模式" }).click();
+  const nextTheme = initialTheme === "dark" ? "light" : "dark";
+  await expect(page.locator("html")).toHaveAttribute("data-theme", nextTheme);
+
+  const heroBookmarkBtn = page.getByRole("button", { name: "收藏 Jayu (自由)" }).first();
+  await heroBookmarkBtn.click();
+  await expect(page.getByTitle("打开我的策展画夹")).toContainText("1");
+});
+
