@@ -49,6 +49,7 @@ interface HeaderProps {
   onOpenFolio?: () => void;
   onRandomSerendipity?: () => void;
   onNavigateSection?: (sectionId: string) => void;
+  activeWing?: string;
 }
 
 export default function Header({
@@ -58,6 +59,7 @@ export default function Header({
   onOpenFolio,
   onRandomSerendipity,
   onNavigateSection,
+  activeWing = "all",
 }: HeaderProps) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [activeSection, setActiveSection] = useState("top");
@@ -87,7 +89,7 @@ export default function Header({
 
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
+  }, [activeWing]);
 
   return (
     <header className="sticky top-0 z-50 bg-bg-light/92 backdrop-blur-md border-b border-border">

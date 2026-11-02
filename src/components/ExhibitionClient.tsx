@@ -222,6 +222,9 @@ export default function ExhibitionClient({
       activeWing !== sectionId
     ) {
       setActiveWing("all");
+      requestAnimationFrame(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+      });
     }
   };
 
@@ -234,6 +237,7 @@ export default function ExhibitionClient({
         onOpenFolio={() => setFolioOpen(true)}
         onRandomSerendipity={handleRandomSerendipity}
         onNavigateSection={handleHeaderNavigate}
+        activeWing={activeWing}
       />
 
       <main className="flex-1">
@@ -242,7 +246,7 @@ export default function ExhibitionClient({
         {/* Quick View, Wing Focus & Favorites Toolbar */}
         <section
           aria-label="快捷浏览与视图控制栏"
-          className="sticky top-[70px] sm:top-[102px] z-30 bg-surface/95 backdrop-blur-md border-b border-border px-6 lg:px-12 py-3 shadow-[0_4px_20px_rgba(20,19,18,0.04)]"
+          className="sticky top-[114px] sm:top-[146px] xl:top-[102px] z-30 bg-surface/95 backdrop-blur-md border-b border-border px-6 lg:px-12 py-3 shadow-[0_4px_20px_rgba(20,19,18,0.04)]"
         >
           <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             {/* Wing Focus Switcher */}
