@@ -36,12 +36,10 @@ export default function SourceAtlasSection({
 }: SourceAtlasSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const filteredSources = useMemo(() => {
-    const base = filterSources(searchQuery, selectedSection);
-    return favoritesOnly
-      ? base.filter((s) => likedIds.includes(s.id))
-      : base;
-  }, [searchQuery, selectedSection, favoritesOnly, likedIds]);
+  const filteredSources = useMemo(
+    () => filterSources(searchQuery, selectedSection, favoritesOnly, likedIds),
+    [searchQuery, selectedSection, favoritesOnly, likedIds]
+  );
 
   const canCollapse =
     !forceExpanded &&

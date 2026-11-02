@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { featuredCards, DesignCard as DesignCardType } from "@/lib/data";
+import { DesignCard as DesignCardType } from "@/lib/data";
+import { filterFeaturedCards } from "@/lib/filters";
 import Modal from "./Modal";
 import DesignCard, { ArtMotifGraphic } from "./DesignCard";
 
@@ -33,19 +34,12 @@ export default function FeaturedSection({
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const filteredCards = featuredCards.filter((card) => {
-    const matchesCategory =
-      activeCategory === "all" || card.categoryId === activeCategory;
-    const matchesQuery =
-      !normalizedQuery ||
-      card.title.toLowerCase().includes(normalizedQuery) ||
-      card.subtitle.toLowerCase().includes(normalizedQuery) ||
-      card.author.toLowerCase().includes(normalizedQuery) ||
-      card.medium.toLowerCase().includes(normalizedQuery) ||
-      card.tags.some((t) => t.label.toLowerCase().includes(normalizedQuery));
-    const matchesFavorite = !favoritesOnly || likedIds.includes(card.id);
-    return matchesCategory && matchesQuery && matchesFavorite;
-  });
+  const filteredCards = filterFeaturedCards(
+    searchQuery,
+    activeCategory,
+    favoritesOnly,
+    likedIds
+  );
 
   const canCollapse =
     !forceExpanded &&

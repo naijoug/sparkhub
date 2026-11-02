@@ -1,28 +1,23 @@
 "use client";
 
-import { categories, featuredCards } from "@/lib/data";
+import { categories } from "@/lib/data";
+import { filterFeaturedCards } from "@/lib/filters";
 
 interface CategoryBarProps {
   activeCategory?: string;
   onSelectCategory?: (id: string) => void;
   searchQuery?: string;
+  favoritesOnly?: boolean;
+  likedIds?: string[];
 }
 
 export default function CategoryBar({
   activeCategory = "all",
   onSelectCategory,
   searchQuery = "",
+  favoritesOnly = false,
+  likedIds = [],
 }: CategoryBarProps) {
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  const matchesSearch = (card: (typeof featuredCards)[number]) =>
-    !normalizedQuery ||
-    card.title.toLowerCase().includes(normalizedQuery) ||
-    card.subtitle.toLowerCase().includes(normalizedQuery) ||
-    card.author.toLowerCase().includes(normalizedQuery) ||
-    card.medium.toLowerCase().includes(normalizedQuery) ||
-    card.tags.some((t) => t.label.toLowerCase().includes(normalizedQuery));
-
   return (
     <section
       id="categories"
@@ -39,10 +34,11 @@ export default function CategoryBar({
         <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="展品分类筛选">
           {categories.map((cat) => {
             const isActive = activeCategory === cat.id;
-            const liveCount = featuredCards.filter(
-              (card) =>
-                (cat.id === "all" || card.categoryId === cat.id) &&
-                matchesSearch(card)
+            const liveCount = filterFeaturedCards(
+              searchQuery,
+              cat.id,
+              favoritesOnly,
+              likedIds
             ).length;
 
             return (

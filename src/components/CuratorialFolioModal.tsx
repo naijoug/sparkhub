@@ -6,7 +6,6 @@ import {
   aiContestCards,
   dailyCurations,
   featuredCards,
-  hackathonCards,
 } from "@/lib/data";
 import { allHackathonProducts } from "@/lib/hackathons";
 import { inspirationSources } from "@/lib/sources";
@@ -104,23 +103,6 @@ export default function CuratorialFolioModal({
           tags: [p.targetPlatform, ...p.techStack.slice(0, 2)],
           href: p.officialUrl,
           accent: "accent",
-        });
-      }
-    });
-
-    hackathonCards.forEach((h) => {
-      if (likedIds.includes(h.id)) {
-        list.push({
-          id: h.id,
-          type: "hackathon",
-          typeLabel: "黑客松造物",
-          catalogNo: h.catalogNo,
-          title: h.title,
-          authorOrHost: h.team,
-          summary: h.summary,
-          tags: h.tags ?? ["黑客松"],
-          href: h.href,
-          accent: h.badgeColor,
         });
       }
     });

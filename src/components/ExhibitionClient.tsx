@@ -21,9 +21,20 @@ import {
   AIContestCard,
   CurationCategory,
 } from "@/lib/data";
-import { allHackathonProducts, HackathonProduct } from "@/lib/hackathons";
+import {
+  allHackathonProducts,
+  HackathonProduct,
+  PlatformCategory,
+} from "@/lib/hackathons";
 import { inspirationSources } from "@/lib/sources";
-import { filterDailyCurations, filterSources, SourceFilter } from "@/lib/filters";
+import {
+  filterAIContestCards,
+  filterDailyCurations,
+  filterFeaturedCards,
+  filterHackathonProducts,
+  filterSources,
+  SourceFilter,
+} from "@/lib/filters";
 import { useCuratorialFolio } from "@/lib/useCuratorialFolio";
 
 export type WingId =
@@ -61,6 +72,8 @@ export default function ExhibitionClient({
 }) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [dailyCategory, setDailyCategory] = useState<CurationCategory>("all");
+  const [hackathonPlatform, setHackathonPlatform] =
+    useState<PlatformCategory>("all");
   const [sourceSection, setSourceSection] = useState<SourceFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeWing, setActiveWing] = useState<WingId>("all");
@@ -78,41 +91,39 @@ export default function ExhibitionClient({
   const searchStats = useMemo(() => {
     if (!normalizedQuery) return null;
 
-    const dailyCount = filterDailyCurations(normalizedQuery, dailyCategory).length;
-
-    const featuredCount = featuredCards.filter(
-      (card) =>
-        (activeCategory === "all" || card.categoryId === activeCategory) &&
-        (card.title.toLowerCase().includes(normalizedQuery) ||
-          card.subtitle.toLowerCase().includes(normalizedQuery) ||
-          card.author.toLowerCase().includes(normalizedQuery) ||
-          card.medium.toLowerCase().includes(normalizedQuery) ||
-          card.tags.some((t) =>
-            t.label.toLowerCase().includes(normalizedQuery)
-          ))
+    const dailyCount = filterDailyCurations(
+      normalizedQuery,
+      dailyCategory,
+      favoritesOnly,
+      likedIds
     ).length;
 
-    const hackathonCount = allHackathonProducts.filter(
-      (p) =>
-        p.title.toLowerCase().includes(normalizedQuery) ||
-        p.tagline.toLowerCase().includes(normalizedQuery) ||
-        p.summary.toLowerCase().includes(normalizedQuery) ||
-        p.targetPlatform.toLowerCase().includes(normalizedQuery) ||
-        p.award.toLowerCase().includes(normalizedQuery) ||
-        p.team.name.toLowerCase().includes(normalizedQuery) ||
-        p.techStack.some((t) => t.toLowerCase().includes(normalizedQuery))
+    const featuredCount = filterFeaturedCards(
+      normalizedQuery,
+      activeCategory,
+      favoritesOnly,
+      likedIds
     ).length;
 
-    const aiCount = aiContestCards.filter(
-      (card) =>
-        card.title.toLowerCase().includes(normalizedQuery) ||
-        card.curatorNote.toLowerCase().includes(normalizedQuery) ||
-        card.meta.toLowerCase().includes(normalizedQuery) ||
-        card.badge.toLowerCase().includes(normalizedQuery) ||
-        (card.tags && card.tags.some((t) => t.toLowerCase().includes(normalizedQuery)))
+    const hackathonCount = filterHackathonProducts(
+      normalizedQuery,
+      hackathonPlatform,
+      favoritesOnly,
+      likedIds
     ).length;
 
-    const sourceCount = filterSources(normalizedQuery, sourceSection).length;
+    const aiCount = filterAIContestCards(
+      normalizedQuery,
+      favoritesOnly,
+      likedIds
+    ).length;
+
+    const sourceCount = filterSources(
+      normalizedQuery,
+      sourceSection,
+      favoritesOnly,
+      likedIds
+    ).length;
 
     return {
       total: dailyCount + featuredCount + hackathonCount + aiCount + sourceCount,
@@ -122,7 +133,15 @@ export default function ExhibitionClient({
       aiCount,
       sourceCount,
     };
-  }, [normalizedQuery, activeCategory, dailyCategory, sourceSection]);
+  }, [
+    normalizedQuery,
+    activeCategory,
+    dailyCategory,
+    hackathonPlatform,
+    sourceSection,
+    favoritesOnly,
+    likedIds,
+  ]);
 
   const handleToggleTag = (tag: string) => {
     setSearchQuery((prev) =>
@@ -403,6 +422,8 @@ export default function ExhibitionClient({
               activeCategory={activeCategory}
               onSelectCategory={setActiveCategory}
               searchQuery={searchQuery}
+              favoritesOnly={favoritesOnly}
+              likedIds={likedIds}
             />
 
             <FeaturedSection
@@ -420,6 +441,8 @@ export default function ExhibitionClient({
 
         {(activeWing === "all" || activeWing === "hackathons") && (
           <HackathonSection
+            selectedPlatform={hackathonPlatform}
+            onSelectPlatform={setHackathonPlatform}
             searchQuery={searchQuery}
             onSelectTag={handleToggleTag}
             likedIds={likedIds}

@@ -8,8 +8,11 @@ import {
   PlatformCategory,
   HackathonProduct,
 } from "@/lib/hackathons";
+import { filterHackathonEditions } from "@/lib/filters";
 
 interface HackathonSectionProps {
+  selectedPlatform?: PlatformCategory;
+  onSelectPlatform?: (platform: PlatformCategory) => void;
   searchQuery?: string;
   onSelectTag?: (tag: string) => void;
   likedIds?: string[];
@@ -23,6 +26,8 @@ interface HackathonSectionProps {
 const INITIAL_VISIBLE_EDITIONS = 2;
 
 export default function HackathonSection({
+  selectedPlatform: controlledPlatform,
+  onSelectPlatform,
   searchQuery = "",
   onSelectTag,
   likedIds = [],
@@ -32,81 +37,32 @@ export default function HackathonSection({
   favoritesOnly = false,
   forceExpanded = false,
 }: HackathonSectionProps) {
-  const [selectedPlatform, setSelectedPlatform] =
+  const [internalPlatform, setInternalPlatform] =
     useState<PlatformCategory>("all");
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const selectedPlatform = controlledPlatform ?? internalPlatform;
+  const handleSelectPlatform = (platform: PlatformCategory) => {
+    if (onSelectPlatform) {
+      onSelectPlatform(platform);
+    } else {
+      setInternalPlatform(platform);
+    }
+  };
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
   // Filter hackathon editions and their top products based on platform, favorites & search query
-  const filteredEditions = useMemo(() => {
-    return hackathonEditions
-      .map((edition) => {
-        const matchingProducts = edition.products.filter((p) => {
-          const matchesPlatform =
-            selectedPlatform === "all" ||
-            p.platformCategory === selectedPlatform;
-
-          const matchesFavorite =
-            !favoritesOnly || likedIds.includes(p.id);
-
-          const matchesSearch =
-            !normalizedQuery ||
-            p.title.toLowerCase().includes(normalizedQuery) ||
-            p.tagline.toLowerCase().includes(normalizedQuery) ||
-            p.summary.toLowerCase().includes(normalizedQuery) ||
-            p.targetPlatform.toLowerCase().includes(normalizedQuery) ||
-            p.award.toLowerCase().includes(normalizedQuery) ||
-            p.team.name.toLowerCase().includes(normalizedQuery) ||
-            p.techStack.some((t) => t.toLowerCase().includes(normalizedQuery));
-
-          return matchesPlatform && matchesFavorite && matchesSearch;
-        });
-
-        if (favoritesOnly) {
-          if (matchingProducts.length === 0) return null;
-          return {
-            ...edition,
-            displayProducts: matchingProducts,
-          };
-        }
-
-        // Also check if the edition itself matches the search
-        const editionMatchesSearch =
-          !normalizedQuery ||
-          edition.name.toLowerCase().includes(normalizedQuery) ||
-          edition.englishName.toLowerCase().includes(normalizedQuery) ||
-          edition.organizer.toLowerCase().includes(normalizedQuery) ||
-          edition.dateDisplay.toLowerCase().includes(normalizedQuery) ||
-          edition.description.toLowerCase().includes(normalizedQuery) ||
-          edition.location.toLowerCase().includes(normalizedQuery);
-
-        const editionMatchesPlatform =
-          selectedPlatform === "all" ||
-          edition.platformCategories.includes(
-            selectedPlatform as Exclude<PlatformCategory, "all">
-          );
-
-        if (
-          (editionMatchesPlatform || matchingProducts.length > 0) &&
-          (editionMatchesSearch || matchingProducts.length > 0)
-        ) {
-          return {
-            ...edition,
-            displayProducts:
-              matchingProducts.length > 0
-                ? matchingProducts
-                : selectedPlatform === "all"
-                  ? edition.products
-                  : edition.products.filter(
-                      (p) => p.platformCategory === selectedPlatform
-                    ),
-          };
-        }
-        return null;
-      })
-      .filter((e): e is NonNullable<typeof e> => e !== null);
-  }, [selectedPlatform, normalizedQuery, favoritesOnly, likedIds]);
+  const filteredEditions = useMemo(
+    () =>
+      filterHackathonEditions(
+        searchQuery,
+        selectedPlatform,
+        favoritesOnly,
+        likedIds
+      ),
+    [searchQuery, selectedPlatform, favoritesOnly, likedIds]
+  );
 
   const totalMatchingProductsCount = useMemo(() => {
     return filteredEditions.reduce(
@@ -179,7 +135,7 @@ export default function HackathonSection({
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => setSelectedPlatform(cat.id)}
+                onClick={() => handleSelectPlatform(cat.id)}
                 className={`inline-flex items-center gap-2 h-9 px-4 rounded-full text-xs font-medium border transition-all cursor-pointer ${
                   active
                     ? "bg-dark text-surface border-dark shadow-sm"

@@ -1,6 +1,7 @@
 "use client";
 
-import { aiContestCards, AIContestCard } from "@/lib/data";
+import { AIContestCard } from "@/lib/data";
+import { filterAIContestCards } from "@/lib/filters";
 
 const badgeColors: Record<string, string> = {
   purple: "bg-purple text-white border-white/25",
@@ -28,18 +29,10 @@ export default function AIContestSection({
   viewMode = "comfort",
   favoritesOnly = false,
 }: AIContestSectionProps) {
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  const filteredCards = aiContestCards.filter(
-    (card) =>
-      (!favoritesOnly || likedIds.includes(card.id)) &&
-      (!normalizedQuery ||
-        card.title.toLowerCase().includes(normalizedQuery) ||
-        card.curatorNote.toLowerCase().includes(normalizedQuery) ||
-        card.meta.toLowerCase().includes(normalizedQuery) ||
-        card.badge.toLowerCase().includes(normalizedQuery) ||
-        (card.tags &&
-          card.tags.some((t) => t.toLowerCase().includes(normalizedQuery))))
+  const filteredCards = filterAIContestCards(
+    searchQuery,
+    favoritesOnly,
+    likedIds
   );
 
   const isCompact = viewMode === "compact";

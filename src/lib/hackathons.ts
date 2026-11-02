@@ -72,14 +72,6 @@ export interface HackathonEdition {
   products: HackathonProduct[];
 }
 
-export const platformCategories: PlatformFilterItem[] = [
-  { id: "all", label: "全部平台", en: "ALL PLATFORMS", count: 20 },
-  { id: "app", label: "移动端 App", en: "MOBILE (iOS / Android)", count: 7 },
-  { id: "web", label: "Web 网站与应用", en: "WEB & CLOUD APPS", count: 8 },
-  { id: "ai", label: "AI 智能体与模型", en: "AI AGENTS & MULTIMODAL", count: 8 },
-  { id: "cross", label: "跨端与空间计算", en: "SPATIAL & EMBEDDED", count: 4 },
-];
-
 export const hackathonEditions: HackathonEdition[] = [
   // ── 01 · Gemini API Developer Competition ─────────────────────────────
   {
@@ -258,7 +250,7 @@ export const hackathonEditions: HackathonEdition[] = [
     prizePool: "$750,000+",
     status: "completed",
     totalSubmissions: 713,
-    platformCategories: ["app", "web", "ai"],
+    platformCategories: ["app", "ai"],
     tagline: "713 个先锋团队角逐：AI 代理经济、移动原生体验与 ZK 基础设施爆发",
     description:
       "伴随以太坊 Devcon 7 在曼谷召开的全球顶级黑客松，吸引来自 80 多个国家的 2,500+ 名创客。本届赛事最大特色是 AI Agent 深入自治经济体，以及 Telegram 与手机端扫码支付等极具现实落地价值的应用。",
@@ -566,7 +558,7 @@ export const hackathonEditions: HackathonEdition[] = [
     prizePool: "$150,000+ 及硅谷顶投孵化",
     status: "completed",
     totalSubmissions: 1200,
-    platformCategories: ["app", "web", "cross"],
+    platformCategories: ["web", "cross"],
     tagline: "全美最大高校黑客松十周年：医疗无障碍、空间计算与应急救灾爆发",
     description:
       "由斯坦福大学主办、全美最具声望的高校创客大赛。汇聚哈佛、MIT、斯坦福等全球名校的顶尖学生团队，以解决气候危机、罕见病医疗救助与前沿人机交互为核心宗旨。",
@@ -1175,6 +1167,43 @@ export const hackathonEditions: HackathonEdition[] = [
 export const allHackathonProducts: HackathonProduct[] = hackathonEditions.flatMap(
   (edition) => edition.products
 );
+
+function countProductsByPlatform(category: Exclude<PlatformCategory, "all">): number {
+  return allHackathonProducts.filter((p) => p.platformCategory === category).length;
+}
+
+export const platformCategories: PlatformFilterItem[] = [
+  {
+    id: "all",
+    label: "全部平台",
+    en: "ALL PLATFORMS",
+    count: allHackathonProducts.length,
+  },
+  {
+    id: "app",
+    label: "移动端 App",
+    en: "MOBILE (iOS / Android)",
+    count: countProductsByPlatform("app"),
+  },
+  {
+    id: "web",
+    label: "Web 网站与应用",
+    en: "WEB & CLOUD APPS",
+    count: countProductsByPlatform("web"),
+  },
+  {
+    id: "ai",
+    label: "AI 智能体与模型",
+    en: "AI AGENTS & MULTIMODAL",
+    count: countProductsByPlatform("ai"),
+  },
+  {
+    id: "cross",
+    label: "跨端与空间计算",
+    en: "SPATIAL & EMBEDDED",
+    count: countProductsByPlatform("cross"),
+  },
+];
 
 export function getProductById(id: string): HackathonProduct | undefined {
   return allHackathonProducts.find((p) => p.id === id);

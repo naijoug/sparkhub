@@ -19,20 +19,6 @@ export interface DesignCard {
   href?: string;
 }
 
-export interface HackathonCard {
-  id: string;
-  catalogNo: string;
-  title: string;
-  team: string;
-  summary: string;
-  image: string;
-  badge: string;
-  badgeColor: AccentTone;
-  href?: string;
-  curatorNote?: string;
-  tags?: string[];
-}
-
 export interface AIContestCard {
   id: string;
   catalogNo: string;
@@ -737,87 +723,6 @@ export const dailyCurations: DailyCurationItem[] = [
     accent: "yellow",
     href: "https://www.cosmos.so/hellopixely/online-tools",
     sourceName: "Cosmos",
-  },
-];
-
-export const hackathonCards: HackathonCard[] = [
-  {
-    id: "h1",
-    catalogNo: "HACK · 01",
-    title: "Web3 去中心化社交平台",
-    team: "Team ChainSync · ETHGlobal 2024",
-    summary: "以去中心化身份图谱为核心的创作者订阅与链上策展空间",
-    image: gradients[6],
-    badge: "一等奖",
-    badgeColor: "purple",
-    href: "https://ethglobal.com/events/lisbon2026/prizes/the-graph",
-    curatorNote: "利用去中心化图谱重构粉丝与创作者关系，交互直观且链上确认动效丝滑。",
-    tags: ["Web3", "社交图谱", "ETHGlobal"],
-  },
-  {
-    id: "h2",
-    catalogNo: "HACK · 02",
-    title: "AI 驱动智能农业监测",
-    team: "Team AgriMind · HackUST 2024",
-    summary: "结合多光谱遥感与边缘端视觉识别的农田生态数字孪生系统",
-    image: gradients[7],
-    badge: "二等奖",
-    badgeColor: "yellow",
-    href: "https://luma-hackathon-500.devpost.com/",
-    curatorNote: "将低空无人机数据与农业病虫害模型结合，实时生成直观的农田健康指数热力图。",
-    tags: ["数字孪生", "遥感", "边缘计算"],
-  },
-  {
-    id: "h3",
-    catalogNo: "HACK · 03",
-    title: "城市交通碳排放可视化",
-    team: "Team GreenPath · TreeHacks 2024",
-    summary: "实时演进的城市脉搏与三维等高线碳足迹流体地图",
-    image: gradients[8],
-    badge: "三等奖",
-    badgeColor: "green",
-    href: "https://luma.com/o2sau79c",
-    curatorNote: "用粒子流速和流体扩散象征碳排放浓度，将冰冷的环境指标转化为令人屏息的宏大视觉图谱。",
-    tags: ["三维地图", "数据可视化", "可持续性"],
-  },
-  {
-    id: "h4",
-    catalogNo: "HACK · 04",
-    title: "AR 室内导航无障碍助手",
-    team: "Team NavAR · HackMIT 2024",
-    summary: "面向视障与听障人群的空间声学引导与高对比度 AR 视觉辅助",
-    image: gradients[9],
-    badge: "最佳创意",
-    badgeColor: "accent",
-    href: "https://luma.com/v2biborh",
-    curatorNote: "充满人道主义关怀的极客造物，巧妙利用空间声场定位解决地下交通枢纽盲行痛点。",
-    tags: ["无障碍设计", "AR空间", "声学定位"],
-  },
-  {
-    id: "h5",
-    catalogNo: "HACK · 05",
-    title: "Cook Some Hooks — Uniswap v4 挂钩生成器",
-    team: "Team Uniswap Crafters · ETHGlobal Brussels 冠军",
-    summary: "生成式 AI 驱动的去中心化交易所自定义流动性池挂钩即时仿真与部署套件",
-    image: gradients[12],
-    badge: "总冠军",
-    badgeColor: "purple",
-    href: "https://ethglobal.com/",
-    curatorNote: "将复杂的 Solidity 与微积分流动性曲线解构为拖拽与对话推演界面，极具工程创造力。",
-    tags: ["DeFi", "Uniswap", "AI代码", "ETHGlobal"],
-  },
-  {
-    id: "h6",
-    catalogNo: "HACK · 06",
-    title: "cellfi — 无网 SMS 极简链上结算助手",
-    team: "Team Cellfi · ETHGlobal Taipei 2025 Top 8",
-    summary: "无需智能手机或蜂窝网络，通过纯短信交互完成全球去中心化稳定币转账与身份确认",
-    image: gradients[10],
-    badge: "顶尖佳作",
-    badgeColor: "yellow",
-    href: "https://ethglobal.com/",
-    curatorNote: "极致克制的无界面（Zero UI）交互典范，打破网络鸿沟让数字货币服务于更广泛的发展中人群。",
-    tags: ["Zero UI", "SMS", "普惠金融", "ETHGlobal"],
   },
 ];
 

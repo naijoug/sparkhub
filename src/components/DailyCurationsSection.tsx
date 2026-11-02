@@ -65,10 +65,12 @@ export default function DailyCurationsSection({
 }: DailyCurationsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const baseItems = filterDailyCurations(searchQuery, selectedTab);
-  const filteredItems = favoritesOnly
-    ? baseItems.filter((item) => likedIds.includes(item.id))
-    : baseItems;
+  const filteredItems = filterDailyCurations(
+    searchQuery,
+    selectedTab,
+    favoritesOnly,
+    likedIds
+  );
 
   const canCollapse =
     !forceExpanded &&
