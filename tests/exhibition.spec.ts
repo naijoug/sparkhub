@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 const storageKey = "sparkhub:curatorial-folio";
 const featuredTitle = "FinTech 秩序感资产叙事仪表盘";
 const featuredOpener = (page: Page) => page.getByRole("button", { name: `查看展品 ${featuredTitle} 详情` });
-const dailyOpener = (page: Page) => page.locator("#daily-curations [role=button]").first();
+const dailyOpener = (page: Page) => page.locator("#daily-curations h3 button").first();
 let runtimeErrors: string[] = [];
 
 test.beforeEach(async ({ page }) => {
@@ -63,7 +63,7 @@ test("invalid stored bookmarks are ignored and can be replaced", async ({ page }
 });
 
 test("all dialog types contain keyboard focus and restore their opener", async ({ page }) => {
-  const openers = [featuredOpener(page), dailyOpener(page), page.locator("#hackathons [role=button]").first(), page.locator("#ai-contests [role=button]").first(), page.getByTitle("打开我的策展画夹")];
+  const openers = [featuredOpener(page), dailyOpener(page), page.locator("#hackathons h4 button").first(), page.locator("#ai-contests h3 button").first(), page.getByTitle("打开我的策展画夹")];
   for (const opener of openers) {
     await opener.click();
     const dialog = page.getByRole("dialog");
@@ -165,7 +165,7 @@ test("copy citation writes the actual clipboard and resets on another item", asy
     expect(clipboard).toContain(href!);
     expect(clipboard).toContain("[SparkHub 策展档案 CURATION · 13]");
     await page.keyboard.press("Escape");
-    await page.locator("#hackathons [role=button]").first().click();
+    await page.locator("#hackathons h4 button").first().click();
     await expect(dialog.getByRole("status")).toBeEmpty();
     await dialog.getByRole("button", { name: /复制学术引文/ }).click();
     await expect(dialog.getByRole("status")).toContainText("引文已复制");

@@ -277,16 +277,7 @@ export default function HackathonSection({
                         return (
                           <div
                             key={prd.id}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => onInspectProduct?.(prd)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                onInspectProduct?.(prd);
-                              }
-                            }}
-                            className="group relative flex flex-col justify-between bg-bg-light/60 rounded-2xl border border-border/80 p-5 hover:bg-surface hover:border-dark/50 hover:shadow-md transition-all duration-300 cursor-pointer text-left"
+                            className="group relative flex flex-col justify-between bg-bg-light/60 rounded-2xl border border-border/80 p-5 hover:bg-surface hover:border-dark/50 hover:shadow-md transition-all duration-300 text-left"
                           >
                             <div className="space-y-3">
                               {/* Card Header: Catalog, Award, Votes, Bookmark */}
@@ -300,14 +291,13 @@ export default function HackathonSection({
                                   </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="relative z-10 flex items-center gap-2 shrink-0">
                                   <span className="text-xs font-mono-meta font-semibold text-dark">
                                     🔥 {prd.votes.toLocaleString()}
                                   </span>
                                   <button
                                     type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
+                                    onClick={() => {
                                       onToggleLike?.(prd.id);
                                     }}
                                     aria-pressed={isLiked}
@@ -325,15 +315,15 @@ export default function HackathonSection({
 
                               {/* Title & What it does */}
                               <div>
-                                <Link
-                                  href={`/products/${prd.id}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="group-hover:text-accent transition-colors"
-                                >
-                                  <h4 className="font-editorial text-xl font-bold text-dark leading-snug">
+                                <h4 className="font-editorial text-xl font-bold text-dark group-hover:text-accent transition-colors leading-snug">
+                                  <button
+                                    type="button"
+                                    onClick={() => onInspectProduct?.(prd)}
+                                    className="text-left cursor-pointer after:absolute after:inset-0 after:z-0 focus-visible:outline-2 focus-visible:outline-accent rounded-sm"
+                                  >
                                     {prd.title}
-                                  </h4>
-                                </Link>
+                                  </button>
+                                </h4>
                                 <p className="text-xs font-editorial italic text-secondary mt-1 line-clamp-2">
                                   “{prd.tagline}”
                                 </p>
@@ -347,13 +337,12 @@ export default function HackathonSection({
                               )}
 
                               {/* Tech Stack Chips */}
-                              <div className="flex flex-wrap gap-1 pt-1">
+                              <div className="relative z-10 flex flex-wrap gap-1 pt-1">
                                 {prd.techStack.slice(0, 3).map((tech) => (
                                   <button
                                     key={tech}
                                     type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
+                                    onClick={() => {
                                       onSelectTag?.(tech);
                                     }}
                                     className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-surface text-muted hover:bg-dark hover:text-surface transition-colors cursor-pointer border border-border/60"
@@ -365,10 +354,9 @@ export default function HackathonSection({
                             </div>
 
                             {/* Action Buttons: To Detail Page & To Official Website */}
-                            <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-xs font-mono-meta">
+                            <div className="relative z-10 mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-xs font-mono-meta">
                               <Link
                                 href={`/products/${prd.id}`}
-                                onClick={(e) => e.stopPropagation()}
                                 className="inline-flex items-center gap-1 font-semibold text-dark hover:text-accent transition-colors py-1"
                               >
                                 <span>详情页</span>
@@ -379,7 +367,6 @@ export default function HackathonSection({
                                 href={prd.officialUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
                                 className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface border border-border text-secondary hover:text-dark hover:border-dark transition-colors"
                               >
                                 <span>直达主站</span>

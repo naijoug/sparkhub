@@ -89,18 +89,9 @@ export default function AIContestSection({
               const isLiked = likedIds.includes(card.id);
 
               return (
-                <div
+                <article
                   key={card.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onInspectDossier?.(card)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      onInspectDossier?.(card);
-                    }
-                  }}
-                  className="group flex flex-col bg-[#1E1C1A] rounded-2xl overflow-hidden border border-white/12 hover:border-white/35 shadow-[0_8px_28px_rgba(0,0,0,0.35)] hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
+                  className="group relative flex flex-col bg-[#1E1C1A] rounded-2xl overflow-hidden border border-white/12 hover:border-white/35 shadow-[0_8px_28px_rgba(0,0,0,0.35)] hover:-translate-y-1 transition-all duration-300 text-left"
                 >
                   {/* Luminous Latent-Space Plate */}
                   <div
@@ -143,8 +134,7 @@ export default function AIContestSection({
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={() => {
                             onToggleLike?.(card.id);
                           }}
                           aria-pressed={isLiked}
@@ -170,7 +160,13 @@ export default function AIContestSection({
                   {/* Dark Gallery Placard Content */}
                   <div className="flex flex-col gap-2.5 p-5 flex-1">
                     <h3 className="font-editorial text-lg font-bold text-[#F6F2E9] group-hover:text-[#F9EAE6] transition-colors leading-snug">
-                      {card.title}
+                      <button
+                        type="button"
+                        onClick={() => onInspectDossier?.(card)}
+                        className="text-left cursor-pointer after:absolute after:inset-0 after:z-0 focus-visible:outline-2 focus-visible:outline-accent rounded-sm"
+                      >
+                        {card.title}
+                      </button>
                     </h3>
                     <p
                       className={`text-xs text-white/70 leading-[1.7] ${
@@ -181,13 +177,12 @@ export default function AIContestSection({
                     </p>
 
                     {card.tags && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
+                      <div className="relative z-10 flex flex-wrap gap-1.5 pt-1">
                         {card.tags.map((tag) => (
                           <button
                             key={tag}
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
+                            onClick={() => {
                               onSelectTag?.(tag);
                             }}
                             className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-white/10 text-white/75 hover:bg-white hover:text-[#141312] transition-colors cursor-pointer"
@@ -202,7 +197,7 @@ export default function AIContestSection({
                       {card.meta}
                     </p>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>

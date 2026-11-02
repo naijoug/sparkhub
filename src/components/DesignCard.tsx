@@ -33,17 +33,7 @@ export default function DesignCard({
 
   return (
     <article
-      role="button"
-      tabIndex={0}
-      aria-label={`查看展品 ${card.title} 详情`}
-      onClick={() => onSelectCard?.(card)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelectCard?.(card);
-        }
-      }}
-      className={`group flex flex-col bg-surface rounded-2xl border border-border overflow-hidden shadow-[0_4px_18px_rgba(20,19,18,0.04)] hover:shadow-[0_18px_42px_rgba(20,19,18,0.12)] hover:border-dark/40 transition-all duration-300 cursor-pointer focus-visible:outline-2 focus-visible:outline-accent ${
+      className={`group relative flex flex-col bg-surface rounded-2xl border border-border overflow-hidden shadow-[0_4px_18px_rgba(20,19,18,0.04)] hover:shadow-[0_18px_42px_rgba(20,19,18,0.12)] hover:border-dark/40 transition-all duration-300 ${
         isWide ? "lg:col-span-2" : ""
       }`}
     >
@@ -103,7 +93,14 @@ export default function DesignCard({
                 compact ? "text-lg" : "text-xl sm:text-[22px]"
               } font-bold text-dark group-hover:text-accent transition-colors leading-snug`}
             >
-              {card.title}
+              <button
+                type="button"
+                aria-label={`查看展品 ${card.title} 详情`}
+                onClick={() => onSelectCard?.(card)}
+                className="text-left cursor-pointer after:absolute after:inset-0 after:z-0 focus-visible:outline-2 focus-visible:outline-accent rounded-sm"
+              >
+                {card.title}
+              </button>
             </h3>
           </div>
           <p
@@ -117,16 +114,15 @@ export default function DesignCard({
 
         <div className="pt-3.5 mt-2 border-t border-border/80 flex items-center justify-between gap-2">
           {/* Tags */}
-          <div className="flex flex-wrap gap-1.5">
+          <div className="relative z-10 flex flex-wrap gap-1.5">
             {card.tags.map((tag) => {
               const isSelected = normalizedSearch === tag.label.toLowerCase();
               return (
                 <button
                   key={tag.label}
                   type="button"
-                  onClick={(e) => {
+                  onClick={() => {
                     if (!onSelectTag) return;
-                    e.stopPropagation();
                     onSelectTag(tag.label);
                   }}
                   className={`inline-flex items-center h-[23px] px-2.5 rounded-full text-[11px] font-medium border transition-colors cursor-pointer ${
@@ -142,11 +138,10 @@ export default function DesignCard({
           </div>
 
           {/* Stats & Bookmark */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="relative z-10 flex items-center gap-2.5 shrink-0">
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 onToggleLike?.(card.id);
               }}
               aria-pressed={liked}

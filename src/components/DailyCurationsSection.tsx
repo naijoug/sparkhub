@@ -168,18 +168,9 @@ export default function DailyCurationsSection({
                 const isLiked = likedIds.includes(item.id);
 
                 return (
-                  <div
+                  <article
                     key={item.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => onInspectDossier?.(item)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        onInspectDossier?.(item);
-                      }
-                    }}
-                    className={`group relative flex flex-col justify-between bg-surface rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_36px_rgba(20,19,18,0.08)] cursor-pointer text-left ${accentBorderHover[item.accent]}`}
+                    className={`group relative flex flex-col justify-between bg-surface rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_36px_rgba(20,19,18,0.08)] text-left ${accentBorderHover[item.accent]}`}
                   >
                     {/* Top pigment accent hairline */}
                     <div
@@ -214,11 +205,10 @@ export default function DailyCurationsSection({
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="relative z-10 flex items-center gap-2 shrink-0">
                             <button
                               type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
+                              onClick={() => {
                                 onToggleLike?.(item.id);
                               }}
                               aria-pressed={isLiked}
@@ -235,7 +225,6 @@ export default function DailyCurationsSection({
                               href={item.href}
                               target="_blank"
                               rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-bg-light border border-border text-[10px] font-mono-meta text-secondary group-hover:bg-dark group-hover:text-surface group-hover:border-dark transition-colors"
                             >
                               <span>{item.sourceName}</span>
@@ -253,7 +242,13 @@ export default function DailyCurationsSection({
                                 : "text-xl sm:text-[22px]"
                             } font-bold text-dark group-hover:text-accent transition-colors leading-snug`}
                           >
-                            {item.title}
+                            <button
+                              type="button"
+                              onClick={() => onInspectDossier?.(item)}
+                              className="text-left cursor-pointer after:absolute after:inset-0 after:z-0 focus-visible:outline-2 focus-visible:outline-accent rounded-sm"
+                            >
+                              {item.title}
+                            </button>
                           </h3>
                           <p className="text-[11px] font-mono-meta text-muted mt-1">
                             {item.creatorOrHost}
@@ -284,7 +279,7 @@ export default function DailyCurationsSection({
 
                       {/* Tags & Archival Link Footer */}
                       <div className="flex items-center justify-between pt-3.5 mt-3 border-t border-border/75">
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="relative z-10 flex flex-wrap gap-1.5">
                           {item.tags.map((tag) => {
                             const isTagSelected =
                               searchQuery.trim().toLowerCase() ===
@@ -293,10 +288,8 @@ export default function DailyCurationsSection({
                               <button
                                 key={tag}
                                 type="button"
-                                onClick={(e) => {
+                                onClick={() => {
                                   if (!onSelectTag) return;
-                                  e.preventDefault();
-                                  e.stopPropagation();
                                   onSelectTag(tag);
                                 }}
                                 className={`text-[11px] font-mono-meta px-2 py-0.5 rounded transition-colors cursor-pointer ${
@@ -315,7 +308,7 @@ export default function DailyCurationsSection({
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 );
               })}
             </div>
