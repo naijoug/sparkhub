@@ -8,6 +8,10 @@ import {
   getHackathonById,
 } from "@/lib/hackathons";
 import Footer from "@/components/Footer";
+import ThemeToggleButton from "@/components/ThemeToggleButton";
+import ProductBookmarkButton, {
+  DetailFolioButton,
+} from "@/components/ProductBookmarkButton";
 
 export function generateStaticParams() {
   return allHackathonProducts.map((p) => ({ id: p.id }));
@@ -94,12 +98,18 @@ export default async function ProductDetailPage({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <ProductBookmarkButton
+              productId={product.id}
+              productTitle={product.title}
+            />
+            <DetailFolioButton />
+            <ThemeToggleButton />
             <a
               href={product.officialUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent hover:bg-dark text-white text-xs font-mono-meta uppercase transition-all shadow-sm cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent hover:bg-dark text-white text-xs font-mono-meta uppercase transition-all shadow-sm cursor-pointer"
             >
               <span>直达主站体验</span>
               <span className="text-xs">↗</span>
@@ -157,6 +167,12 @@ export default async function ProductDetailPage({
                   ↗
                 </span>
               </a>
+
+              <ProductBookmarkButton
+                productId={product.id}
+                productTitle={product.title}
+                variant="hero"
+              />
 
               {product.githubUrl && (
                 <a
@@ -253,7 +269,7 @@ export default async function ProductDetailPage({
                 <ul className="space-y-4">
                   {product.coreFeatures.map((feat, idx) => (
                     <li
-                      key={idx}
+                      key={feat}
                       className="flex items-start gap-3 p-4 rounded-2xl bg-bg-light/75 border border-border/80"
                     >
                       <span className="w-6 h-6 rounded-full bg-dark text-surface text-xs font-mono-meta flex items-center justify-center shrink-0 mt-0.5">

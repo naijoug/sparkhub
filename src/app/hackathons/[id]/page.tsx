@@ -6,6 +6,10 @@ import {
   getHackathonById,
 } from "@/lib/hackathons";
 import Footer from "@/components/Footer";
+import ThemeToggleButton from "@/components/ThemeToggleButton";
+import ProductBookmarkButton, {
+  DetailFolioButton,
+} from "@/components/ProductBookmarkButton";
 
 export function generateStaticParams() {
   return hackathonEditions.map((h) => ({ id: h.id }));
@@ -64,14 +68,18 @@ export default async function HackathonEditionPage({
             </span>
           </div>
 
-          <a
-            href={hackathon.officialUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-dark hover:bg-accent text-white text-xs font-mono-meta uppercase transition-all shadow-sm cursor-pointer"
-          >
-            <span>访问赛事官网 / Devpost ↗</span>
-          </a>
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <DetailFolioButton />
+            <ThemeToggleButton />
+            <a
+              href={hackathon.officialUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-dark hover:bg-accent text-surface hover:text-white text-xs font-mono-meta uppercase transition-all shadow-sm cursor-pointer"
+            >
+              <span>访问赛事官网 / Devpost ↗</span>
+            </a>
+          </div>
         </div>
       </header>
 
@@ -187,7 +195,7 @@ export default async function HackathonEditionPage({
                     </div>
 
                     {/* Action Footer */}
-                    <div className="pt-6 mt-4 border-t border-border flex items-center justify-between text-xs font-mono-meta">
+                    <div className="pt-6 mt-4 border-t border-border flex flex-wrap items-center justify-between gap-2 text-xs font-mono-meta">
                       <Link
                         href={`/products/${prd.id}`}
                         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-dark text-surface hover:bg-accent transition-colors font-semibold shadow-sm"
@@ -196,15 +204,21 @@ export default async function HackathonEditionPage({
                         <span>→</span>
                       </Link>
 
-                      <a
-                        href={prd.officialUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-secondary hover:text-dark hover:bg-bg-light transition-colors"
-                      >
-                        <span>访问主站</span>
-                        <span className="text-xs">↗</span>
-                      </a>
+                      <div className="flex items-center gap-2">
+                        <ProductBookmarkButton
+                          productId={prd.id}
+                          productTitle={prd.title}
+                        />
+                        <a
+                          href={prd.officialUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-secondary hover:text-dark hover:bg-bg-light transition-colors"
+                        >
+                          <span>访问主站</span>
+                          <span className="text-xs">↗</span>
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
