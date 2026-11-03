@@ -121,6 +121,9 @@ export default function ExhibitionClient({
       const favParam = params.get("fav");
       setFavoritesOnly(favParam === "1" || favParam === "true");
 
+      const viewParam = params.get("view");
+      setViewMode(viewParam === "compact" ? "compact" : "comfort");
+
       const dailyParam = params.get("daily") as CurationCategory | null;
       setDailyCategory(
         dailyParam && validDailyCategories.includes(dailyParam)
@@ -160,6 +163,7 @@ export default function ExhibitionClient({
     if (searchQuery.trim()) params.set("q", searchQuery);
     if (activeWing !== "all") params.set("wing", activeWing);
     if (favoritesOnly) params.set("fav", "1");
+    if (viewMode === "compact") params.set("view", "compact");
     if (dailyCategory !== "all") params.set("daily", dailyCategory);
     if (activeCategory !== "all") params.set("cat", activeCategory);
     if (hackathonPlatform !== "all") params.set("platform", hackathonPlatform);
@@ -178,6 +182,7 @@ export default function ExhibitionClient({
     searchQuery,
     activeWing,
     favoritesOnly,
+    viewMode,
     dailyCategory,
     activeCategory,
     hackathonPlatform,
@@ -587,24 +592,28 @@ export default function ExhibitionClient({
       </main>
 
       {/* Curatorial Folio Modal */}
-      <CuratorialFolioModal
-        isOpen={folioOpen}
-        onClose={() => setFolioOpen(false)}
-        likedIds={likedIds}
-        onToggleLike={handleToggleLike}
-        onClearAll={handleClearAllLikes}
-        onSelectTag={handleToggleTag}
-      />
+      {folioOpen && (
+        <CuratorialFolioModal
+          isOpen={folioOpen}
+          onClose={() => setFolioOpen(false)}
+          likedIds={likedIds}
+          onToggleLike={handleToggleLike}
+          onClearAll={handleClearAllLikes}
+          onSelectTag={handleToggleTag}
+        />
+      )}
 
       {/* Unified Curation Inspection Lightbox Modal */}
-      <CurationDossierModal
-        key={inspectingDossier?.id ?? "closed"}
-        item={inspectingDossier}
-        onClose={() => setInspectingDossier(null)}
-        liked={Boolean(inspectingDossier && likedIds.includes(inspectingDossier.id))}
-        onToggleLike={(id) => handleToggleLike(id)}
-        onSelectTag={handleToggleTag}
-      />
+      {inspectingDossier && (
+        <CurationDossierModal
+          key={inspectingDossier.id}
+          item={inspectingDossier}
+          onClose={() => setInspectingDossier(null)}
+          liked={likedIds.includes(inspectingDossier.id)}
+          onToggleLike={(id) => handleToggleLike(id)}
+          onSelectTag={handleToggleTag}
+        />
+      )}
 
       {children}
     </>

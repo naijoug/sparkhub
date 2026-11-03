@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
+  coreSources,
   inspirationSources,
   sourceSections,
   dietMeta,
@@ -136,8 +137,10 @@ export default function SourceAtlasSection({
                 : "bg-accent-light text-accent border-accent/25 hover:bg-accent hover:text-white"
             }`}
           >
-            <span>★ 核心 12 站</span>
-            <span className="text-[10px] font-mono-meta opacity-80">[12]</span>
+            <span>★ 核心 {coreSources.length} 站</span>
+            <span className="text-[10px] font-mono-meta opacity-80">
+              [{coreSources.length}]
+            </span>
           </button>
 
           {sourceSections.map((sec) => {

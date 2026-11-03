@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  allHackathonProducts,
   hackathonEditions,
   platformCategories,
   PlatformCategory,
@@ -101,7 +102,7 @@ export default function HackathonSection({
               <span>GLOBAL HACKATHONS &amp; WINNING SPECIMENS · 赛事与高票造物</span>
               <span>·</span>
               <span className="text-accent font-semibold">
-                {hackathonEditions.length} 大旗舰赛事 · 20 款高票产品
+                {hackathonEditions.length} 大旗舰赛事 · {allHackathonProducts.length} 款高票产品
               </span>
             </div>
             <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-dark">

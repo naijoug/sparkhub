@@ -36,15 +36,16 @@ SparkHub 是一座专注于数字界面美学、先锋创客实验与生成式�
 3. **个人策展画夹与页内收藏筛选 (Personal Curatorial Folio & Favorites Filter)**
    - 五类内容卡片均配有直观的「♡ 收藏 / ♥ 已收藏」按钮，支持在顶部「♥ 我的收藏」画夹弹窗中按类别查看和移除，亦可在主页面快捷栏一键开启「♥ 只看已收藏」页内筛选。收藏保存到当前浏览器的本地存储，刷新后恢复；存储被禁用时仅在当前页面内保留。
    - **一键导出 Markdown 策展笔记**：桌面与手机端均可下载 `.md` 文件，包含全部收藏（不受画夹当前分类影响）的类别、标题、作者/出处、摘要、标签和原站链接；文件名使用浏览器本地日期。
-4. **快捷浏览控制栏与渐进式展陈 (Quick View Bar & Progressive Disclosure)**
+4. **快捷浏览控制栏、URL 状态同步与渐进式展陈 (Quick View Bar, URL Sync & Progressive Disclosure)**
    - **展区聚焦切换**：支持在「全部展区」与单一展区（每日漫游、常设画廊、极客造物、算法美学、信源图谱）之间一键切换，避免长页面信息过载。
    - **舒适视图 / 紧凑列表切换**：支持在图文详实的社论卡片视图与高密度多列紧凑列表之间即时切换。
+   - **URL 查询参数同步**：搜索词（`q`）、当前聚焦展区（`wing`）、只看收藏（`fav`）、视图密度（`view`）与各馆子分类自动同步至 URL 查询参数，支持直接分享筛选链接或在详情页返回时恢复阅读位置。
    - **默认精简展示与按需展开**：「全部展区」默认优先呈现各馆精选条目（漫游志 6 期、常设馆藏 6 件、黑客松 2 期、信源图谱 12 站），可通过底部按钮一键展开全部馆藏。
 5. **深色暗房 / 浅色纸本双主题模式 (Dark & Light Theme Mode)**
    - 支持一键切换浅色「暖羊皮纸」与深色「黑曜石暗房」主题，自动同步系统 `prefers-color-scheme: dark` 偏好并持久化至 `localStorage`（`sparkhub:theme`），首屏内联脚本保障零闪烁渲染。
 6. **独立产品详情页与赛事专区 (Dedicated Product & Hackathon Pages)**
-   - 彻底超越浅层弹窗，为每个黑客松高票产品构建**全功能独立详情页 (`/products/[id]`)**，详实呈现产品机制、解决痛点、交互亮点、赛事背景与技术栈，并提供显著的**直达产品主站体验 (Official Site ↗)** 按钮与 GitHub 仓库入口。
-   - 提供**赛事期数专属页面 (`/hackathons/[id]`)**，按期数完整陈列当期所有参赛高票作品。
+   - 彻底超越浅层弹窗，为每个黑客松高票产品构建**全功能独立详情页 (`/products/[id]`)**，详实呈现产品机制、解决痛点、交互亮点、赛事背景与技术栈，并提供显著的**直达产品主站体验 (Official Site ↗)** 按钮、GitHub 仓库入口、主题切换、画夹入口与产品直接收藏能力。
+   - 提供**赛事期数专属页面 (`/hackathons/[id]`)**，按期数完整陈列当期所有参赛高票作品并支持页内收藏与主题切换。
 7. **统一文献详情灯箱 (Curatorial Dossier Modal)**
    - 为每日文献、黑客松原型与 AI 特展提供深度评述、学术引文一键复制、原站直达链接与画夹收藏。复制成功以剪贴板写入完成为准；权限拒绝或接口不可用时提示失败，并提供可选择的引文文本。
    - 详情与画夹使用原生模态对话框：打开后焦点进入弹窗，背景不可交互，关闭后返回触发元素；支持 Esc、关闭按钮和遮罩关闭。
@@ -65,7 +66,7 @@ SparkHub 是一座专注于数字界面美学、先锋创客实验与生成式�
   - `#245E47` 孔雀石绿 (Malachite Green)
   - `#B87B18` 典藏赭金 (Archive Ochre)
   - `#141312` 黑曜石暗房 (Obsidian Darkroom)
-- **字体与版式**: 现代社论 Serif (`Instrument Serif` / `Playfair Display` / `Songti SC`) + 无衬线 (`Plus Jakarta Sans` / `PingFang SC`) + 馆藏等宽编号 (`JetBrains Mono`)
+- **字体与版式**: 现代社论 Serif (`Instrument Serif` / `Playfair Display` / `Songti SC`) + 无衬线 (`Inter` / `PingFang SC`) + 馆藏等宽编号 (`JetBrains Mono`)
 - **语言**: TypeScript (全链路类型安全)
 - **自动化部署**: GitHub Actions (`.github/workflows/deploy.yml`) 推送 `main` 分支后自动构建并发布至 GitHub Pages ([https://naijoug.github.io/sparkhub/](https://naijoug.github.io/sparkhub/))
 

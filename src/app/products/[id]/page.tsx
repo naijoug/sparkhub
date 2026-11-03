@@ -3,10 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   allHackathonProducts,
-  getProductById,
   getRelatedProducts,
   getHackathonById,
 } from "@/lib/hackathons";
+import { getProductDetailById } from "@/lib/hackathon-details";
 import Footer from "@/components/Footer";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
 import ProductBookmarkButton, {
@@ -23,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const product = getProductById(id);
+  const product = getProductDetailById(id);
 
   if (!product) {
     return {
@@ -62,7 +62,7 @@ export default async function ProductDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = getProductById(id);
+  const product = getProductDetailById(id);
 
   if (!product) {
     notFound();
@@ -399,12 +399,13 @@ export default async function ProductDetailPage({
 
                 <div className="flex flex-wrap gap-2 pt-2">
                   {product.techStack.map((tech) => (
-                    <span
+                    <Link
                       key={tech}
-                      className="px-3 py-1 rounded-full text-xs font-mono-meta bg-bg-card text-dark border border-border"
+                      href={`/?q=${encodeURIComponent(tech)}`}
+                      className="px-3 py-1 rounded-full text-xs font-mono-meta bg-bg-card text-dark border border-border hover:bg-dark hover:text-surface hover:border-dark transition-colors"
                     >
-                      {tech}
-                    </span>
+                      #{tech}
+                    </Link>
                   ))}
                 </div>
               </div>

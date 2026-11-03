@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useCuratorialFolio } from "@/lib/useCuratorialFolio";
 
@@ -59,6 +60,7 @@ export default function ProductBookmarkButton({
 
 export function DetailFolioButton() {
   const [folioOpen, setFolioOpen] = useState(false);
+  const router = useRouter();
   const { likedIds, toggleLike, clearLikes } = useCuratorialFolio();
   const savedCount = likedIds.length;
 
@@ -94,6 +96,7 @@ export function DetailFolioButton() {
           likedIds={likedIds}
           onToggleLike={toggleLike}
           onClearAll={clearLikes}
+          onSelectTag={(tag) => router.push(`/?q=${encodeURIComponent(tag)}`)}
         />
       )}
     </>
