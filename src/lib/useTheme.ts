@@ -8,21 +8,26 @@ const THEME_STORAGE_KEY = "sparkhub:theme";
 const THEME_CHANGE_EVENT = "sparkhub:theme-change";
 let memoryTheme: ThemeMode | null = null;
 
-function resolveBrowserTheme(): ThemeMode {
+function resolveStoredOrSystemTheme(): ThemeMode {
   if (typeof window === "undefined") return "light";
-  const attr = document.documentElement.getAttribute("data-theme");
-  if (attr === "dark" || attr === "light") return attr;
-  if (memoryTheme) return memoryTheme;
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
     if (stored === "dark" || stored === "light") return stored;
   } catch {
     // Ignore storage access errors
   }
+  if (memoryTheme) return memoryTheme;
   if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
     return "dark";
   }
   return "light";
+}
+
+function resolveBrowserTheme(): ThemeMode {
+  if (typeof window === "undefined") return "light";
+  const attr = document.documentElement.getAttribute("data-theme");
+  if (attr === "dark" || attr === "light") return attr;
+  return resolveStoredOrSystemTheme();
 }
 
 function applyDocumentTheme(theme: ThemeMode) {
@@ -46,7 +51,13 @@ function subscribe(onChange: () => void) {
 
   const onStorage = (event: StorageEvent) => {
     if (event.key === THEME_STORAGE_KEY || event.key === null) {
-      applyDocumentTheme(resolveBrowserTheme());
+      const next =
+        event.key === THEME_STORAGE_KEY &&
+        (event.newValue === "dark" || event.newValue === "light")
+          ? event.newValue
+          : resolveStoredOrSystemTheme();
+      memoryTheme = next;
+      applyDocumentTheme(next);
       onChange();
     }
   };
@@ -55,7 +66,9 @@ function subscribe(onChange: () => void) {
     try {
       const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
       if (stored !== "dark" && stored !== "light") {
-        applyDocumentTheme(media.matches ? "dark" : "light");
+        const next: ThemeMode = media.matches ? "dark" : "light";
+        memoryTheme = next;
+        applyDocumentTheme(next);
         onChange();
       }
     } catch {

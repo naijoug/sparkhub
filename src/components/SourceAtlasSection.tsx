@@ -273,7 +273,7 @@ export default function SourceAtlasSection({
                         {source.summary}
                       </p>
 
-                      {/* Caveat or license if any */}
+                      {/* Caveat if any */}
                       {source.caveat && !isCompact && (
                         <p className="text-[10px] text-yellow bg-yellow-light px-2.5 py-1 rounded border border-yellow/30 font-mono-meta">
                           ⚠ {source.caveat}

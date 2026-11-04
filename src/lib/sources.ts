@@ -1,8 +1,8 @@
 /**
- * Inspiration Source Atlas · 灵感源图谱
+ * Inspiration Source Atlas · 灵感信源图谱
  *
  * SparkHub 的灵感信源登记表，同时承担两项职责：
- * 1. 前台展示：WING V「灵感源图谱」按板块（App / SaaS / Web / 设计系统 …）陈列信源；
+ * 1. 前台展示：WING V「灵感信源图谱」按板块（App / SaaS / Web / 设计系统 …）陈列信源；
  * 2. 巡航清单：每日漫游志（dailyCurations）在采撷新条目时，按 `cadence` 决定扫描频率，
  *    按 `diet` 控制「真实产品 70% · 视觉案例 20% · 跨界实验 10%」的配比。
  *

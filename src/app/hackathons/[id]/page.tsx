@@ -184,12 +184,13 @@ export default async function HackathonEditionPage({
                       {/* Tech stack badges */}
                       <div className="flex flex-wrap gap-1.5 pt-2">
                         {prd.techStack.slice(0, 4).map((tech) => (
-                          <span
+                          <Link
                             key={tech}
-                            className="px-2 py-0.5 rounded text-[11px] font-mono-meta bg-bg-light text-muted border border-border/80"
+                            href={`/?q=${encodeURIComponent(tech)}`}
+                            className="px-2 py-0.5 rounded text-[11px] font-mono-meta bg-bg-light text-muted border border-border/80 hover:bg-dark hover:text-surface hover:border-dark transition-colors"
                           >
-                            {tech}
-                          </span>
+                            #{tech}
+                          </Link>
                         ))}
                       </div>
                     </div>

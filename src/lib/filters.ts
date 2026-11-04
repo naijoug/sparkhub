@@ -1,6 +1,7 @@
 import {
   aiContestCards,
   AIContestCard,
+  categories,
   CurationCategory,
   dailyCurations,
   DailyCurationItem,
@@ -17,10 +18,110 @@ import {
   InspirationSource,
   inspirationSources,
   matchesSourceQuery,
+  sourceSections,
   SourceSectionId,
 } from "./sources";
 
 export type SourceFilter = SourceSectionId | "all" | "core";
+
+export type WingId =
+  | "all"
+  | "daily-curations"
+  | "featured"
+  | "hackathons"
+  | "ai-contests"
+  | "sources";
+
+export type ViewDensityMode = "comfort" | "compact";
+
+export interface ExhibitionFilterState {
+  searchQuery: string;
+  activeWing: WingId;
+  favoritesOnly: boolean;
+  viewMode: ViewDensityMode;
+  dailyCategory: CurationCategory;
+  activeCategory: string;
+  hackathonPlatform: PlatformCategory;
+  sourceSection: SourceFilter;
+}
+
+export const VALID_WINGS: ReadonlySet<WingId> = new Set<WingId>([
+  "all",
+  "daily-curations",
+  "featured",
+  "hackathons",
+  "ai-contests",
+  "sources",
+]);
+
+export const VALID_DAILY_CATEGORIES: ReadonlySet<CurationCategory> =
+  new Set<CurationCategory>(["all", "product", "event", "website"]);
+
+export const VALID_FEATURED_CATEGORIES: ReadonlySet<string> = new Set<string>(
+  categories.map((c) => c.id)
+);
+
+export const VALID_HACKATHON_PLATFORMS: ReadonlySet<PlatformCategory> =
+  new Set<PlatformCategory>(["all", "app", "web", "ai", "cross"]);
+
+export const VALID_SOURCE_FILTERS: ReadonlySet<SourceFilter> =
+  new Set<SourceFilter>(["all", "core", ...sourceSections.map((s) => s.id)]);
+
+export function parseFilterSearchParams(
+  search: string | URLSearchParams
+): ExhibitionFilterState {
+  const params =
+    typeof search === "string" ? new URLSearchParams(search) : search;
+
+  const qParam = params.get("q");
+  const wingParam = params.get("wing") as WingId | null;
+  const favParam = params.get("fav");
+  const viewParam = params.get("view");
+  const dailyParam = params.get("daily") as CurationCategory | null;
+  const catParam = params.get("cat");
+  const platformParam = params.get("platform") as PlatformCategory | null;
+  const sourceParam = params.get("source") as SourceFilter | null;
+
+  return {
+    searchQuery: qParam ?? "",
+    activeWing: wingParam && VALID_WINGS.has(wingParam) ? wingParam : "all",
+    favoritesOnly: favParam === "1" || favParam === "true",
+    viewMode: viewParam === "compact" ? "compact" : "comfort",
+    dailyCategory:
+      dailyParam && VALID_DAILY_CATEGORIES.has(dailyParam)
+        ? dailyParam
+        : "all",
+    activeCategory:
+      catParam && VALID_FEATURED_CATEGORIES.has(catParam) ? catParam : "all",
+    hackathonPlatform:
+      platformParam && VALID_HACKATHON_PLATFORMS.has(platformParam)
+        ? platformParam
+        : "all",
+    sourceSection:
+      sourceParam && VALID_SOURCE_FILTERS.has(sourceParam)
+        ? sourceParam
+        : "all",
+  };
+}
+
+export function serializeFilterSearchParams(
+  state: ExhibitionFilterState
+): string {
+  const params = new URLSearchParams();
+  if (state.searchQuery.trim()) params.set("q", state.searchQuery);
+  if (state.activeWing !== "all") params.set("wing", state.activeWing);
+  if (state.favoritesOnly) params.set("fav", "1");
+  if (state.viewMode === "compact") params.set("view", "compact");
+  if (state.dailyCategory !== "all") params.set("daily", state.dailyCategory);
+  if (state.activeCategory !== "all") params.set("cat", state.activeCategory);
+  if (state.hackathonPlatform !== "all") {
+    params.set("platform", state.hackathonPlatform);
+  }
+  if (state.sourceSection !== "all") {
+    params.set("source", state.sourceSection);
+  }
+  return params.toString();
+}
 
 export interface FilteredHackathonEdition extends HackathonEdition {
   displayProducts: HackathonProduct[];

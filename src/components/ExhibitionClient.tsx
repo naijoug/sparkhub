@@ -38,19 +38,15 @@ import {
   filterFeaturedCards,
   filterHackathonProducts,
   filterSources,
+  parseFilterSearchParams,
+  serializeFilterSearchParams,
   SourceFilter,
+  ViewDensityMode,
+  WingId,
 } from "@/lib/filters";
 import { useCuratorialFolio } from "@/lib/useCuratorialFolio";
 
-export type WingId =
-  | "all"
-  | "daily-curations"
-  | "featured"
-  | "hackathons"
-  | "ai-contests"
-  | "sources";
-
-export type ViewDensityMode = "comfort" | "compact";
+export type { WingId, ViewDensityMode };
 
 const wingTabs: { id: WingId; label: string; count: number }[] = [
   {
@@ -69,24 +65,6 @@ const wingTabs: { id: WingId; label: string; count: number }[] = [
   { id: "ai-contests", label: "04 算法美学", count: aiContestCards.length },
   { id: "sources", label: "05 信源图谱", count: inspirationSources.length },
 ];
-
-const validWings: WingId[] = [
-  "all",
-  "daily-curations",
-  "featured",
-  "hackathons",
-  "ai-contests",
-  "sources",
-];
-
-const validDailyCategories: CurationCategory[] = [
-  "all",
-  "product",
-  "event",
-  "website",
-];
-
-const validPlatforms: PlatformCategory[] = ["all", "app", "web", "ai", "cross"];
 
 export default function ExhibitionClient({
   children,
@@ -109,40 +87,15 @@ export default function ExhibitionClient({
 
   useEffect(() => {
     const syncFromUrl = () => {
-      const params = new URLSearchParams(window.location.search);
-      const qParam = params.get("q");
-      setSearchQuery(qParam ?? "");
-
-      const wingParam = params.get("wing") as WingId | null;
-      setActiveWing(
-        wingParam && validWings.includes(wingParam) ? wingParam : "all"
-      );
-
-      const favParam = params.get("fav");
-      setFavoritesOnly(favParam === "1" || favParam === "true");
-
-      const viewParam = params.get("view");
-      setViewMode(viewParam === "compact" ? "compact" : "comfort");
-
-      const dailyParam = params.get("daily") as CurationCategory | null;
-      setDailyCategory(
-        dailyParam && validDailyCategories.includes(dailyParam)
-          ? dailyParam
-          : "all"
-      );
-
-      const catParam = params.get("cat");
-      setActiveCategory(catParam || "all");
-
-      const platformParam = params.get("platform") as PlatformCategory | null;
-      setHackathonPlatform(
-        platformParam && validPlatforms.includes(platformParam)
-          ? platformParam
-          : "all"
-      );
-
-      const sourceParam = params.get("source") as SourceFilter | null;
-      setSourceSection(sourceParam || "all");
+      const next = parseFilterSearchParams(window.location.search);
+      setSearchQuery(next.searchQuery);
+      setActiveWing(next.activeWing);
+      setFavoritesOnly(next.favoritesOnly);
+      setViewMode(next.viewMode);
+      setDailyCategory(next.dailyCategory);
+      setActiveCategory(next.activeCategory);
+      setHackathonPlatform(next.hackathonPlatform);
+      setSourceSection(next.sourceSection);
     };
 
     if (window.location.search) {
@@ -159,17 +112,16 @@ export default function ExhibitionClient({
       return;
     }
 
-    const params = new URLSearchParams();
-    if (searchQuery.trim()) params.set("q", searchQuery);
-    if (activeWing !== "all") params.set("wing", activeWing);
-    if (favoritesOnly) params.set("fav", "1");
-    if (viewMode === "compact") params.set("view", "compact");
-    if (dailyCategory !== "all") params.set("daily", dailyCategory);
-    if (activeCategory !== "all") params.set("cat", activeCategory);
-    if (hackathonPlatform !== "all") params.set("platform", hackathonPlatform);
-    if (sourceSection !== "all") params.set("source", sourceSection);
-
-    const searchStr = params.toString();
+    const searchStr = serializeFilterSearchParams({
+      searchQuery,
+      activeWing,
+      favoritesOnly,
+      viewMode,
+      dailyCategory,
+      activeCategory,
+      hackathonPlatform,
+      sourceSection,
+    });
     const nextUrl = `${window.location.pathname}${
       searchStr ? `?${searchStr}` : ""
     }${window.location.hash}`;

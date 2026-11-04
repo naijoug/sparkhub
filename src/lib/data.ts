@@ -54,20 +54,18 @@ export interface Category {
   id: string;
   label: string;
   enLabel: string;
-  count: number;
-  active?: boolean;
 }
 
 export const categories: Category[] = [
-  { id: "all", label: "全部展品", enLabel: "ALL WORKS", count: 16, active: true },
-  { id: "web", label: "网页设计", enLabel: "WEB & EDITORIAL", count: 2 },
-  { id: "interaction", label: "交互设计", enLabel: "INTERACTIVE", count: 2 },
-  { id: "design-eng", label: "设计工程", enLabel: "DESIGN ENG", count: 2 },
-  { id: "motion", label: "动效设计", enLabel: "KINETIC", count: 2 },
-  { id: "3d", label: "3D 设计", enLabel: "SPATIAL 3D", count: 2 },
-  { id: "brand", label: "品牌设计", enLabel: "IDENTITY", count: 2 },
-  { id: "mobile", label: "移动应用", enLabel: "MOBILE", count: 2 },
-  { id: "illustration", label: "插画设计", enLabel: "ILLUSTRATION", count: 2 },
+  { id: "all", label: "全部展品", enLabel: "ALL WORKS" },
+  { id: "web", label: "网页设计", enLabel: "WEB & EDITORIAL" },
+  { id: "interaction", label: "交互设计", enLabel: "INTERACTIVE" },
+  { id: "design-eng", label: "设计工程", enLabel: "DESIGN ENG" },
+  { id: "motion", label: "动效设计", enLabel: "KINETIC" },
+  { id: "3d", label: "3D 设计", enLabel: "SPATIAL 3D" },
+  { id: "brand", label: "品牌设计", enLabel: "IDENTITY" },
+  { id: "mobile", label: "移动应用", enLabel: "MOBILE" },
+  { id: "illustration", label: "插画设计", enLabel: "ILLUSTRATION" },
 ];
 
 export const hotTags = [

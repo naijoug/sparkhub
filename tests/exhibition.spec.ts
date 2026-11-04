@@ -60,6 +60,14 @@ test("invalid stored bookmarks are ignored and can be replaced", async ({ page }
   await page.reload();
   await page.getByRole("button", { name: `收藏 ${featuredTitle}`, exact: true }).click();
   await expect(page.getByTitle("打开我的策展画夹")).toContainText("1");
+
+  // Unknown/stale IDs do not inflate bookmark counts
+  await page.evaluate(
+    (key) => localStorage.setItem(key, JSON.stringify(["stale-deleted-id", "1"])),
+    storageKey
+  );
+  await page.reload();
+  await expect(page.getByTitle("打开我的策展画夹")).toContainText("1");
 });
 
 test("all dialog types contain keyboard focus and restore their opener", async ({ page }) => {
@@ -208,16 +216,28 @@ test("export creation failure offers a retry", async ({ page }) => {
   await expect(page.getByRole("dialog").getByRole("alert")).toHaveCount(0);
 });
 
-test("dark mode toggle switches theme and persists across reload", async ({ page }) => {
+test("dark mode toggle switches theme, syncs across tabs, and persists across reload", async ({ page, context }) => {
+  const secondTab = await context.newPage();
+  await secondTab.goto("/");
+
   const themeBtn = page.getByRole("button", { name: "切换深色或浅色模式" });
   const initialTheme = await page.locator("html").getAttribute("data-theme");
   await themeBtn.click();
   const nextTheme = initialTheme === "dark" ? "light" : "dark";
   await expect(page.locator("html")).toHaveAttribute("data-theme", nextTheme);
+  await expect(secondTab.locator("html")).toHaveAttribute("data-theme", nextTheme);
+
+  await secondTab.close();
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", nextTheme);
   await themeBtn.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", initialTheme ?? "light");
+});
+
+test("invalid cat and source URL query params fall back to all without emptying sections", async ({ page }) => {
+  await page.goto("/?cat=nonexistent_category&source=nonexistent_source");
+  await expect(page.locator("#featured h3")).toHaveCount(6);
+  await expect(page.locator("#sources h4")).toHaveCount(12);
 });
 
 test("quick view bar progressive disclosure, wing focus, compact view and favorites-only filter work", async ({ page }) => {
