@@ -25,6 +25,12 @@ import {
   parseFolioIds,
   VALID_FOLIO_IDS,
 } from "@/lib/useCuratorialFolio";
+import {
+  aiContestToDossier,
+  dailyToDossier,
+  hackathonProductToDossier,
+  pickRandomDossier,
+} from "@/lib/dossier";
 
 test.describe("Catalog & Folio unit tests", () => {
   test("VALID_FOLIO_IDS matches the exact set of unique catalog IDs across all 5 wings", () => {
@@ -166,5 +172,29 @@ test.describe("Filter functions unit tests", () => {
 
     const favSource = filterSources("mobbin", "all", true, ["mobbin"]);
     expect(favSource.map((s) => s.id)).toEqual(["mobbin"]);
+  });
+});
+
+test.describe("Dossier adapter unit tests", () => {
+  test("dailyToDossier, hackathonProductToDossier, and aiContestToDossier map fields accurately", () => {
+    const daily = dailyToDossier(dailyCurations[0]);
+    expect(daily.id).toBe(dailyCurations[0].id);
+    expect(daily.catalogNo).toBe(dailyCurations[0].issueNo);
+
+    const hackathon = hackathonProductToDossier(allHackathonProducts[0]);
+    expect(hackathon.id).toBe(allHackathonProducts[0].id);
+    expect(hackathon.href).toBe(allHackathonProducts[0].officialUrl);
+
+    const ai = aiContestToDossier(aiContestCards[0]);
+    expect(ai.id).toBe(aiContestCards[0].id);
+    expect(ai.sourceName).toBe("Generative Atelier");
+  });
+
+  test("pickRandomDossier deterministically selects across daily, hackathon, and AI wings", () => {
+    const first = pickRandomDossier(() => 0);
+    expect(first.id).toBe(dailyCurations[0].id);
+
+    const last = pickRandomDossier(() => 0.999999);
+    expect(last.id).toBe(aiContestCards[aiContestCards.length - 1].id);
   });
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { categories } from "@/lib/data";
 import { filterFeaturedCards } from "@/lib/filters";
 
@@ -18,6 +19,20 @@ export default function CategoryBar({
   favoritesOnly = false,
   likedIds = [],
 }: CategoryBarProps) {
+  const categoryCounts = useMemo(() => {
+    const matchingAll = filterFeaturedCards(
+      searchQuery,
+      "all",
+      favoritesOnly,
+      likedIds
+    );
+    const counts: Record<string, number> = { all: matchingAll.length };
+    matchingAll.forEach((card) => {
+      counts[card.categoryId] = (counts[card.categoryId] ?? 0) + 1;
+    });
+    return counts;
+  }, [searchQuery, favoritesOnly, likedIds]);
+
   return (
     <section
       id="categories"
@@ -31,22 +46,20 @@ export default function CategoryBar({
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="展品分类筛选">
+        <div
+          className="flex flex-wrap items-center gap-2"
+          role="group"
+          aria-label="展品分类筛选"
+        >
           {categories.map((cat) => {
             const isActive = activeCategory === cat.id;
-            const liveCount = filterFeaturedCards(
-              searchQuery,
-              cat.id,
-              favoritesOnly,
-              likedIds
-            ).length;
+            const liveCount = categoryCounts[cat.id] ?? 0;
 
             return (
               <button
                 key={cat.id}
                 type="button"
-                role="tab"
-                aria-selected={isActive}
+                aria-pressed={isActive}
                 onClick={() => onSelectCategory?.(cat.id)}
                 className={`group inline-flex items-center gap-2 h-9 px-4 rounded-full text-xs sm:text-sm font-medium border transition-all cursor-pointer ${
                   isActive

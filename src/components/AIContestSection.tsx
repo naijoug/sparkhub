@@ -1,7 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { AIContestCard } from "@/lib/data";
 import { filterAIContestCards } from "@/lib/filters";
+import {
+  BookmarkPillButton,
+  EmptySectionState,
+  TagChipButton,
+} from "./CuratorialPrimitives";
 
 const badgeColors: Record<string, string> = {
   purple: "bg-purple text-white border-white/25",
@@ -29,10 +35,9 @@ export default function AIContestSection({
   viewMode = "comfort",
   favoritesOnly = false,
 }: AIContestSectionProps) {
-  const filteredCards = filterAIContestCards(
-    searchQuery,
-    favoritesOnly,
-    likedIds
+  const filteredCards = useMemo(
+    () => filterAIContestCards(searchQuery, favoritesOnly, likedIds),
+    [searchQuery, favoritesOnly, likedIds]
   );
 
   const isCompact = viewMode === "compact";
@@ -74,11 +79,12 @@ export default function AIContestSection({
         </div>
 
         {filteredCards.length === 0 ? (
-          <div className="py-12 text-center text-sm text-white/60 bg-white/5 rounded-2xl border border-white/10">
-            {favoritesOnly
-              ? "算法美学展区中暂无已收藏作品，点击展品卡片右上角的「♡ 收藏」即可加入。"
-              : `暂无匹配“${searchQuery}”的生成式艺术佳作。`}
-          </div>
+          <EmptySectionState
+            favoritesOnly={favoritesOnly}
+            favoritesText="算法美学展区中暂无已收藏作品，点击展品卡片右上角的「♡ 收藏」即可加入。"
+            emptyText={`暂无匹配“${searchQuery}”的生成式艺术佳作。`}
+            className="py-12 text-center text-sm text-white/60 bg-white/5 rounded-2xl border border-white/10"
+          />
         ) : (
           <div
             className={`grid grid-cols-1 sm:grid-cols-2 ${
@@ -126,27 +132,24 @@ export default function AIContestSection({
                         strokeWidth="0.8"
                         strokeDasharray="2 3"
                       />
-                      <circle cx="90" cy="60" r="14" stroke="white" strokeWidth="1.2" />
+                      <circle
+                        cx="90"
+                        cy="60"
+                        r="14"
+                        stroke="white"
+                        strokeWidth="1.2"
+                      />
                     </svg>
 
                     <div className="relative z-10 flex items-center justify-between text-[10px] font-mono-meta text-white/80">
                       <span>{card.catalogNo}</span>
                       <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onToggleLike?.(card.id);
-                          }}
-                          aria-pressed={isLiked}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono-meta transition-colors cursor-pointer ${
-                            isLiked
-                              ? "bg-accent text-white font-semibold"
-                              : "bg-black/55 text-white/90 hover:bg-black/80 hover:text-white border border-white/20"
-                          }`}
-                          aria-label={`收藏 ${card.title}`}
-                        >
-                          <span>{isLiked ? "♥ 已收藏" : "♡ 收藏"}</span>
-                        </button>
+                        <BookmarkPillButton
+                          liked={isLiked}
+                          title={card.title}
+                          onToggle={() => onToggleLike?.(card.id)}
+                          variant="dark"
+                        />
                       </div>
                     </div>
 
@@ -179,16 +182,12 @@ export default function AIContestSection({
                     {card.tags && (
                       <div className="relative z-10 flex flex-wrap gap-1.5 pt-1">
                         {card.tags.map((tag) => (
-                          <button
+                          <TagChipButton
                             key={tag}
-                            type="button"
-                            onClick={() => {
-                              onSelectTag?.(tag);
-                            }}
-                            className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-white/10 text-white/75 hover:bg-white hover:text-[#141312] transition-colors cursor-pointer"
-                          >
-                            #{tag}
-                          </button>
+                            tag={tag}
+                            onSelectTag={onSelectTag}
+                            variant="dark"
+                          />
                         ))}
                       </div>
                     )}

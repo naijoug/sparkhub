@@ -5,10 +5,29 @@ import {
   coreSources,
   inspirationSources,
   sourceSections,
+  SourceSectionId,
   dietMeta,
 } from "@/lib/sources";
-
 import { filterSources, SourceFilter } from "@/lib/filters";
+import {
+  BookmarkPillButton,
+  EmptySectionState,
+  SectionExpandToggle,
+  TagChipButton,
+} from "./CuratorialPrimitives";
+
+const sectionSourceCounts: Record<SourceSectionId, number> = (() => {
+  const counts = {} as Record<SourceSectionId, number>;
+  sourceSections.forEach((sec) => {
+    counts[sec.id] = 0;
+  });
+  inspirationSources.forEach((source) => {
+    source.sections.forEach((secId) => {
+      counts[secId] = (counts[secId] ?? 0) + 1;
+    });
+  });
+  return counts;
+})();
 
 interface SourceAtlasSectionProps {
   selectedSection: SourceFilter;
@@ -115,6 +134,7 @@ export default function SourceAtlasSection({
         <div className="flex flex-wrap items-center gap-2 pt-2">
           <button
             type="button"
+            aria-pressed={selectedSection === "all"}
             onClick={() => onSelectSection("all")}
             className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
               selectedSection === "all"
@@ -130,6 +150,7 @@ export default function SourceAtlasSection({
 
           <button
             type="button"
+            aria-pressed={selectedSection === "core"}
             onClick={() => onSelectSection("core")}
             className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
               selectedSection === "core"
@@ -145,14 +166,13 @@ export default function SourceAtlasSection({
 
           {sourceSections.map((sec) => {
             const active = selectedSection === sec.id;
-            const count = inspirationSources.filter((s) =>
-              s.sections.includes(sec.id)
-            ).length;
+            const count = sectionSourceCounts[sec.id] ?? 0;
 
             return (
               <button
                 key={sec.id}
                 type="button"
+                aria-pressed={active}
                 onClick={() => onSelectSection(sec.id)}
                 className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                   active
@@ -193,11 +213,11 @@ export default function SourceAtlasSection({
 
         {/* Source Cards Grid */}
         {filteredSources.length === 0 ? (
-          <div className="py-14 text-center text-sm text-muted bg-surface rounded-2xl border border-border">
-            {favoritesOnly
-              ? "灵感信源图谱中暂无已收藏站点，点击站点卡片右上角的「♡ 收藏」即可加入。"
-              : `暂无匹配“${searchQuery}”的灵感信源，请尝试切换上方类别或重置搜索词。`}
-          </div>
+          <EmptySectionState
+            favoritesOnly={favoritesOnly}
+            favoritesText="灵感信源图谱中暂无已收藏站点，点击站点卡片右上角的「♡ 收藏」即可加入。"
+            emptyText={`暂无匹配“${searchQuery}”的灵感信源，请尝试切换上方类别或重置搜索词。`}
+          />
         ) : (
           <>
             <div
@@ -238,19 +258,12 @@ export default function SourceAtlasSection({
                         </div>
 
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => onToggleLike?.(source.id)}
-                            aria-pressed={isLiked}
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-mono-meta transition-colors cursor-pointer ${
-                              isLiked
-                                ? "bg-accent text-white border-accent font-semibold"
-                                : "bg-bg-light border-border text-secondary hover:text-dark hover:border-dark"
-                            }`}
-                            aria-label={`收藏 ${source.name}`}
-                          >
-                            <span>{isLiked ? "♥ 已收藏" : "♡ 收藏"}</span>
-                          </button>
+                          <BookmarkPillButton
+                            liked={isLiked}
+                            title={source.name}
+                            onToggle={() => onToggleLike?.(source.id)}
+                            variant="light"
+                          />
                           <a
                             href={source.url}
                             target="_blank"
@@ -283,14 +296,12 @@ export default function SourceAtlasSection({
                       {/* Focus tags */}
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {source.focus.map((f) => (
-                          <button
+                          <TagChipButton
                             key={f}
-                            type="button"
-                            onClick={() => onSelectTag?.(f)}
-                            className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-bg-light text-secondary hover:bg-dark hover:text-surface transition-colors cursor-pointer"
-                          >
-                            #{f}
-                          </button>
+                            tag={f}
+                            onSelectTag={onSelectTag}
+                            variant="light"
+                          />
                         ))}
                       </div>
                     </div>
@@ -314,21 +325,14 @@ export default function SourceAtlasSection({
             </div>
 
             {canCollapse && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setIsExpanded((prev) => !prev)}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-border bg-surface hover:border-dark hover:bg-dark hover:text-surface text-xs font-mono-meta text-dark transition-all cursor-pointer shadow-xs"
-                >
-                  <span>
-                    {isExpanded
-                      ? "收起部分灵感信源 ↑"
-                      : `展开全部 ${filteredSources.length} 个灵感信源 (还有 ${
-                          filteredSources.length - INITIAL_VISIBLE_COUNT
-                        } 个) ↓`}
-                  </span>
-                </button>
-              </div>
+              <SectionExpandToggle
+                expanded={isExpanded}
+                onToggle={() => setIsExpanded((prev) => !prev)}
+                collapseLabel="收起部分灵感信源 ↑"
+                expandLabel={`展开全部 ${filteredSources.length} 个灵感信源 (还有 ${
+                  filteredSources.length - INITIAL_VISIBLE_COUNT
+                } 个) ↓`}
+              />
             )}
           </>
         )}

@@ -10,6 +10,12 @@ import {
   HackathonProduct,
 } from "@/lib/hackathons";
 import { filterHackathonEditions } from "@/lib/filters";
+import {
+  BookmarkPillButton,
+  EmptySectionState,
+  SectionExpandToggle,
+  TagChipButton,
+} from "./CuratorialPrimitives";
 
 interface HackathonSectionProps {
   selectedPlatform?: PlatformCategory;
@@ -27,7 +33,7 @@ interface HackathonSectionProps {
 const INITIAL_VISIBLE_EDITIONS = 2;
 
 export default function HackathonSection({
-  selectedPlatform: controlledPlatform,
+  selectedPlatform = "all",
   onSelectPlatform,
   searchQuery = "",
   onSelectTag,
@@ -38,18 +44,7 @@ export default function HackathonSection({
   favoritesOnly = false,
   forceExpanded = false,
 }: HackathonSectionProps) {
-  const [internalPlatform, setInternalPlatform] =
-    useState<PlatformCategory>("all");
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const selectedPlatform = controlledPlatform ?? internalPlatform;
-  const handleSelectPlatform = (platform: PlatformCategory) => {
-    if (onSelectPlatform) {
-      onSelectPlatform(platform);
-    } else {
-      setInternalPlatform(platform);
-    }
-  };
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -99,10 +94,13 @@ export default function HackathonSection({
               <span className="px-2 py-0.5 rounded bg-surface border border-border text-dark font-semibold">
                 WING III · 展馆三
               </span>
-              <span>GLOBAL HACKATHONS &amp; WINNING SPECIMENS · 赛事与高票造物</span>
+              <span>
+                GLOBAL HACKATHONS &amp; WINNING SPECIMENS · 赛事与高票造物
+              </span>
               <span>·</span>
               <span className="text-accent font-semibold">
-                {hackathonEditions.length} 大旗舰赛事 · {allHackathonProducts.length} 款高票产品
+                {hackathonEditions.length} 大旗舰赛事 ·{" "}
+                {allHackathonProducts.length} 款高票产品
               </span>
             </div>
             <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-dark">
@@ -136,7 +134,8 @@ export default function HackathonSection({
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => handleSelectPlatform(cat.id)}
+                aria-pressed={active}
+                onClick={() => onSelectPlatform?.(cat.id)}
                 className={`inline-flex items-center gap-2 h-9 px-4 rounded-full text-xs font-medium border transition-all cursor-pointer ${
                   active
                     ? "bg-dark text-surface border-dark shadow-sm"
@@ -174,11 +173,12 @@ export default function HackathonSection({
 
         {/* Hackathon Editions List */}
         {filteredEditions.length === 0 ? (
-          <div className="py-14 text-center text-sm text-muted bg-surface rounded-3xl border border-border">
-            {favoritesOnly
-              ? "极客造物展区中暂无已收藏作品，点击黑客松产品卡片右上角的「♡ 收藏」即可加入。"
-              : `暂无匹配“${searchQuery}”或当前平台的黑客松赛事，请尝试重置检索词或选择“全部平台”。`}
-          </div>
+          <EmptySectionState
+            favoritesOnly={favoritesOnly}
+            favoritesText="极客造物展区中暂无已收藏作品，点击黑客松产品卡片右上角的「♡ 收藏」即可加入。"
+            emptyText={`暂无匹配“${searchQuery}”或当前平台的黑客松赛事，请尝试重置检索词或选择“全部平台”。`}
+            className="py-14 text-center text-sm text-muted bg-surface rounded-3xl border border-border"
+          />
         ) : (
           <>
             <div className={isCompact ? "space-y-6" : "space-y-10"}>
@@ -257,14 +257,16 @@ export default function HackathonSection({
                   </div>
 
                   {/* Top-Voted Products Showcase Cards */}
-                  <div className={isCompact ? "p-5 space-y-3" : "p-6 sm:p-8 space-y-4"}>
+                  <div
+                    className={
+                      isCompact ? "p-5 space-y-3" : "p-6 sm:p-8 space-y-4"
+                    }
+                  >
                     <div className="flex items-center justify-between text-xs font-mono-meta text-muted">
                       <span className="uppercase tracking-wider">
                         本期高票 / 获奖造物展示
                       </span>
-                      <span>
-                        共 {edition.displayProducts.length} 款
-                      </span>
+                      <span>共 {edition.displayProducts.length} 款</span>
                     </div>
 
                     <div
@@ -296,21 +298,12 @@ export default function HackathonSection({
                                   <span className="text-xs font-mono-meta font-semibold text-dark">
                                     🔥 {prd.votes.toLocaleString()}
                                   </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      onToggleLike?.(prd.id);
-                                    }}
-                                    aria-pressed={isLiked}
-                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-mono-meta transition-colors cursor-pointer ${
-                                      isLiked
-                                        ? "bg-accent text-white border-accent font-semibold"
-                                        : "bg-surface border-border text-secondary hover:text-dark hover:border-dark"
-                                    }`}
-                                    aria-label={`收藏 ${prd.title}`}
-                                  >
-                                    <span>{isLiked ? "♥ 已收藏" : "♡ 收藏"}</span>
-                                  </button>
+                                  <BookmarkPillButton
+                                    liked={isLiked}
+                                    title={prd.title}
+                                    onToggle={() => onToggleLike?.(prd.id)}
+                                    variant="surface"
+                                  />
                                 </div>
                               </div>
 
@@ -340,16 +333,12 @@ export default function HackathonSection({
                               {/* Tech Stack Chips */}
                               <div className="relative z-10 flex flex-wrap gap-1 pt-1">
                                 {prd.techStack.slice(0, 3).map((tech) => (
-                                  <button
+                                  <TagChipButton
                                     key={tech}
-                                    type="button"
-                                    onClick={() => {
-                                      onSelectTag?.(tech);
-                                    }}
-                                    className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-surface text-muted hover:bg-dark hover:text-surface transition-colors cursor-pointer border border-border/60"
-                                  >
-                                    #{tech}
-                                  </button>
+                                    tag={tech}
+                                    onSelectTag={onSelectTag}
+                                    variant="surface"
+                                  />
                                 ))}
                               </div>
                             </div>
@@ -384,19 +373,12 @@ export default function HackathonSection({
             </div>
 
             {canCollapse && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setIsExpanded((prev) => !prev)}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-border bg-surface hover:border-dark hover:bg-dark hover:text-surface text-xs font-mono-meta text-dark transition-all cursor-pointer shadow-xs"
-                >
-                  <span>
-                    {isExpanded
-                      ? "收起部分黑客松赛事 ↑"
-                      : `展开全部 ${filteredEditions.length} 期黑客松赛事 (共 ${totalMatchingProductsCount} 款高票产品) ↓`}
-                  </span>
-                </button>
-              </div>
+              <SectionExpandToggle
+                expanded={isExpanded}
+                onToggle={() => setIsExpanded((prev) => !prev)}
+                collapseLabel="收起部分黑客松赛事 ↑"
+                expandLabel={`展开全部 ${filteredEditions.length} 期黑客松赛事 (共 ${totalMatchingProductsCount} 款高票产品) ↓`}
+              />
             )}
           </>
         )}

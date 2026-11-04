@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useCuratorialFolio } from "@/lib/useCuratorialFolio";
+import { BookmarkPillButton } from "./CuratorialPrimitives";
 
 const CuratorialFolioModal = dynamic(
   () => import("@/components/CuratorialFolioModal")
@@ -42,19 +43,12 @@ export default function ProductBookmarkButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => toggleLike(productId)}
-      aria-pressed={isLiked}
-      aria-label={`收藏 ${productTitle}`}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono-meta transition-colors cursor-pointer ${
-        isLiked
-          ? "bg-accent text-white border-accent font-semibold"
-          : "bg-surface border-border text-secondary hover:text-dark hover:border-dark"
-      }`}
-    >
-      <span>{isLiked ? "♥ 已收藏" : "♡ 收藏"}</span>
-    </button>
+    <BookmarkPillButton
+      liked={isLiked}
+      title={productTitle}
+      onToggle={() => toggleLike(productId)}
+      variant="detail"
+    />
   );
 }
 

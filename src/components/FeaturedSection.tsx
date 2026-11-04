@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { DesignCard as DesignCardType } from "@/lib/data";
 import { filterFeaturedCards } from "@/lib/filters";
-import Modal from "./Modal";
-import DesignCard, { ArtMotifGraphic } from "./DesignCard";
+import DesignCard from "./DesignCard";
+import FeaturedArtworkModal from "./FeaturedArtworkModal";
+import { EmptySectionState, SectionExpandToggle } from "./CuratorialPrimitives";
 
 interface FeaturedSectionProps {
   activeCategory?: string;
@@ -34,11 +35,10 @@ export default function FeaturedSection({
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const filteredCards = filterFeaturedCards(
-    searchQuery,
-    activeCategory,
-    favoritesOnly,
-    likedIds
+  const filteredCards = useMemo(
+    () =>
+      filterFeaturedCards(searchQuery, activeCategory, favoritesOnly, likedIds),
+    [searchQuery, activeCategory, favoritesOnly, likedIds]
   );
 
   const canCollapse =
@@ -54,36 +54,6 @@ export default function FeaturedSection({
       : filteredCards;
 
   const isCompact = viewMode === "compact";
-
-  const selectedIndex = selectedCard
-    ? filteredCards.findIndex((c) => c.id === selectedCard.id)
-    : -1;
-
-  useEffect(() => {
-    if (!selectedCard) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" && filteredCards.length > 1) {
-        const idx = filteredCards.findIndex((c) => c.id === selectedCard.id);
-        if (idx !== -1) {
-          setSelectedCard(filteredCards[(idx + 1) % filteredCards.length]);
-        }
-      } else if (e.key === "ArrowLeft" && filteredCards.length > 1) {
-        const idx = filteredCards.findIndex((c) => c.id === selectedCard.id);
-        if (idx !== -1) {
-          setSelectedCard(
-            filteredCards[
-              (idx - 1 + filteredCards.length) % filteredCards.length
-            ]
-          );
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [selectedCard, filteredCards]);
 
   return (
     <section
@@ -119,11 +89,11 @@ export default function FeaturedSection({
 
         {/* Asymmetric Museum Wall Grid */}
         {filteredCards.length === 0 ? (
-          <div className="py-14 text-center text-sm text-muted bg-surface rounded-2xl border border-border">
-            {favoritesOnly
-              ? "常设馆藏中暂无已收藏作品，点击展品卡片右下角的「♡ 收藏」即可加入。"
-              : "当前筛选条件下暂无常设馆藏作品，请尝试切换上方展馆分类或清空检索词。"}
-          </div>
+          <EmptySectionState
+            favoritesOnly={favoritesOnly}
+            favoritesText="常设馆藏中暂无已收藏作品，点击展品卡片右下角的「♡ 收藏」即可加入。"
+            emptyText="当前筛选条件下暂无常设馆藏作品，请尝试切换上方展馆分类或清空检索词。"
+          />
         ) : (
           <>
             <div
@@ -146,196 +116,28 @@ export default function FeaturedSection({
             </div>
 
             {canCollapse && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setIsExpanded((prev) => !prev)}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-border bg-surface hover:border-dark hover:bg-dark hover:text-surface text-xs font-mono-meta text-dark transition-all cursor-pointer shadow-xs"
-                >
-                  <span>
-                    {isExpanded
-                      ? "收起部分常设馆藏 ↑"
-                      : `展开全部 ${filteredCards.length} 件常设馆藏 (还有 ${
-                          filteredCards.length - INITIAL_VISIBLE_COUNT
-                        } 件) ↓`}
-                  </span>
-                </button>
-              </div>
+              <SectionExpandToggle
+                expanded={isExpanded}
+                onToggle={() => setIsExpanded((prev) => !prev)}
+                collapseLabel="收起部分常设馆藏 ↑"
+                expandLabel={`展开全部 ${filteredCards.length} 件常设馆藏 (还有 ${
+                  filteredCards.length - INITIAL_VISIBLE_COUNT
+                } 件) ↓`}
+              />
             )}
           </>
         )}
       </div>
 
-      {/* Museum Exhibition Dossier Lightbox Modal */}
-      {selectedCard && (
-        <Modal
-          open={Boolean(selectedCard)}
-          onClose={() => setSelectedCard(null)}
-          labelledBy="lightbox-title"
-        >
-          <div
-            className="bg-surface border border-dark/30 rounded-3xl max-w-3xl w-full max-h-full flex flex-col overflow-hidden shadow-[0_24px_70px_rgba(20,19,18,0.35)] art-frame"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Top Dossier Bar */}
-            <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-border bg-bg-light">
-              <div className="flex min-w-0 flex-wrap items-center gap-2.5 text-xs font-mono-meta text-muted">
-                <span className="text-accent">◆</span>
-                <span className="text-dark font-semibold">
-                  {selectedCard.catalogNo}
-                </span>
-                <span>·</span>
-                <span>{selectedCard.medium}</span>
-              </div>
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                {filteredCards.length > 1 && selectedIndex !== -1 && (
-                  <div className="flex items-center gap-1 mr-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedCard(
-                          filteredCards[
-                            (selectedIndex - 1 + filteredCards.length) %
-                              filteredCards.length
-                          ]
-                        )
-                      }
-                      aria-label="上一件展品"
-                      className="text-[11px] font-mono-meta px-2.5 py-1 rounded-full border border-border hover:border-dark bg-surface text-secondary hover:text-dark cursor-pointer transition-colors"
-                    >
-                      ← PREV
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedCard(
-                          filteredCards[
-                            (selectedIndex + 1) % filteredCards.length
-                          ]
-                        )
-                      }
-                      aria-label="下一件展品"
-                      className="text-[11px] font-mono-meta px-2.5 py-1 rounded-full border border-border hover:border-dark bg-surface text-secondary hover:text-dark cursor-pointer transition-colors"
-                    >
-                      NEXT →
-                    </button>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setSelectedCard(null)}
-                  className="text-[11px] font-mono-meta px-3 py-1 rounded-full border border-border hover:border-dark bg-surface text-secondary hover:text-dark cursor-pointer transition-colors"
-                >
-                  ESC / CLOSE ✕
-                </button>
-              </div>
-            </div>
-
-            <div className="grid min-h-0 overflow-y-auto overscroll-contain grid-cols-1 md:grid-cols-12">
-              {/* Left: Generative Plate View */}
-              <div
-                className={`md:col-span-6 min-h-[260px] bg-gradient-to-br ${selectedCard.image} relative flex flex-col items-center justify-center p-8 text-white`}
-              >
-                <div className="absolute inset-4 border border-white/20 rounded-2xl pointer-events-none" />
-                <ArtMotifGraphic motif={selectedCard.artMotif} />
-                <div className="absolute bottom-5 left-6 right-6 flex items-center justify-between text-[10px] font-mono-meta uppercase opacity-80">
-                  <span>MOTIF // {selectedCard.artMotif}</span>
-                  <span>YEAR // {selectedCard.year}</span>
-                </div>
-              </div>
-
-              {/* Right: Curatorial Critique & Provenance */}
-              <div className="md:col-span-6 p-6 sm:p-8 flex flex-col justify-between gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <span className="text-[11px] font-mono-meta uppercase text-accent font-semibold">
-                      {selectedCard.author}
-                    </span>
-                    <h3
-                      id="lightbox-title"
-                      className="font-editorial text-2xl sm:text-[26px] font-bold text-dark mt-1 leading-snug"
-                    >
-                      {selectedCard.title}
-                    </h3>
-                  </div>
-
-                  <p className="text-sm text-secondary leading-[1.8]">
-                    {selectedCard.subtitle}。
-                  </p>
-
-                  {selectedCard.curatorCritique && (
-                    <div className="relative pl-3.5 border-l-2 border-accent bg-bg-light/95 py-2.5 pr-3 rounded-r-lg">
-                      <span className="font-mono-meta text-[10px] uppercase text-accent font-semibold block mb-0.5">
-                        CURATORIAL CRITIQUE //
-                      </span>
-                      <p className="font-editorial italic text-xs text-dark/95 leading-relaxed">
-                        “{selectedCard.curatorCritique}”
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="p-3.5 rounded-xl bg-bg-light border border-border space-y-1.5">
-                    <div className="text-[10px] font-mono-meta uppercase text-muted">
-                      ARCHIVAL PROVENANCE / 馆藏著录
-                    </div>
-                    <div className="text-xs text-dark font-mono-meta">
-                      MEDIUM: {selectedCard.medium} ({selectedCard.year})
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {selectedCard.tags.map((t) => (
-                      <button
-                        key={t.label}
-                        type="button"
-                        onClick={() => {
-                          onSelectTag?.(t.label);
-                          setSelectedCard(null);
-                        }}
-                        className="text-[11px] font-mono-meta px-2.5 py-0.5 rounded-full bg-bg-card border border-border text-secondary hover:border-dark hover:text-dark cursor-pointer transition-colors"
-                      >
-                        #{t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-border text-xs font-mono-meta text-muted">
-                  <button
-                    type="button"
-                    onClick={() => onToggleLike?.(selectedCard.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors cursor-pointer ${
-                      likedIds.includes(selectedCard.id)
-                        ? "bg-accent-light text-accent border-accent/30 font-semibold"
-                        : "bg-bg-light text-secondary border-border hover:border-dark"
-                    }`}
-                  >
-                    <span>
-                      {likedIds.includes(selectedCard.id)
-                        ? "♥ SAVED · 已收藏"
-                        : "♡ APPRECIATE · 收藏"}
-                    </span>
-                    <span>
-                      ({likedIds.includes(selectedCard.id) ? `${selectedCard.likes}+` : selectedCard.likes})
-                    </span>
-                  </button>
-
-                  {selectedCard.href && (
-                    <a
-                      href={selectedCard.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-dark hover:text-accent transition-colors"
-                    >
-                      <span>VISIT ↗</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Modal>
-      )}
+      <FeaturedArtworkModal
+        card={selectedCard}
+        cards={filteredCards}
+        liked={Boolean(selectedCard && likedIds.includes(selectedCard.id))}
+        onClose={() => setSelectedCard(null)}
+        onSelectCard={setSelectedCard}
+        onToggleLike={onToggleLike}
+        onSelectTag={onSelectTag}
+      />
     </section>
   );
 }

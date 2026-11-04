@@ -3,20 +3,10 @@
 import Modal from "./Modal";
 import { useEffect, useRef, useState } from "react";
 import { AccentTone } from "@/lib/data";
+import { DossierInspectItem } from "@/lib/dossier";
+import { TagChipButton } from "./CuratorialPrimitives";
 
-export interface DossierInspectItem {
-  id: string;
-  catalogNo: string;
-  categoryLabel: string;
-  title: string;
-  authorOrHost: string;
-  summary: string;
-  curatorNote?: string;
-  tags: string[];
-  accent: AccentTone;
-  href?: string;
-  sourceName?: string;
-}
+export type { DossierInspectItem };
 
 interface CurationDossierModalProps {
   item: DossierInspectItem | null;
@@ -168,17 +158,15 @@ export default function CurationDossierModal({
             </span>
             <div className="flex flex-wrap gap-2 pt-1">
               {item.tags.map((tag) => (
-                <button
+                <TagChipButton
                   key={tag}
-                  type="button"
-                  onClick={() => {
-                    onSelectTag?.(tag);
+                  tag={tag}
+                  variant="pill"
+                  onSelectTag={(selected) => {
+                    onSelectTag?.(selected);
                     onClose();
                   }}
-                  className="text-xs font-mono-meta px-2.5 py-1 rounded-full bg-bg-card text-secondary hover:bg-dark hover:text-surface transition-colors cursor-pointer border border-border"
-                >
-                  #{tag}
-                </button>
+                />
               ))}
             </div>
           </div>

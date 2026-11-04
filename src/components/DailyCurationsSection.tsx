@@ -1,18 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { filterDailyCurations } from "@/lib/filters";
 import {
   dailyCurations,
   CurationCategory,
   DailyCurationItem,
 } from "@/lib/data";
+import {
+  BookmarkPillButton,
+  EmptySectionState,
+  SectionExpandToggle,
+  TagChipButton,
+} from "./CuratorialPrimitives";
 
-const filterTabs: { id: CurationCategory; label: string; en: string }[] = [
-  { id: "all", label: "全部漫游", en: "ALL DISPATCHES" },
-  { id: "product", label: "新锐器物", en: "PRODUCTS" },
-  { id: "event", label: "创意聚落", en: "EVENTS & HACKS" },
-  { id: "website", label: "独立站点与文献", en: "WEBSITES & ESSAYS" },
+const filterTabs: {
+  id: CurationCategory;
+  label: string;
+  en: string;
+  count: number;
+}[] = [
+  {
+    id: "all",
+    label: "全部漫游",
+    en: "ALL DISPATCHES",
+    count: dailyCurations.length,
+  },
+  {
+    id: "product",
+    label: "新锐器物",
+    en: "PRODUCTS",
+    count: dailyCurations.filter((i) => i.category === "product").length,
+  },
+  {
+    id: "event",
+    label: "创意聚落",
+    en: "EVENTS & HACKS",
+    count: dailyCurations.filter((i) => i.category === "event").length,
+  },
+  {
+    id: "website",
+    label: "独立站点与文献",
+    en: "WEBSITES & ESSAYS",
+    count: dailyCurations.filter((i) => i.category === "website").length,
+  },
 ];
 
 const accentBadgeStyles: Record<DailyCurationItem["accent"], string> = {
@@ -65,17 +96,18 @@ export default function DailyCurationsSection({
 }: DailyCurationsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const filteredItems = filterDailyCurations(
-    searchQuery,
-    selectedTab,
-    favoritesOnly,
-    likedIds
+  const filteredItems = useMemo(
+    () =>
+      filterDailyCurations(searchQuery, selectedTab, favoritesOnly, likedIds),
+    [searchQuery, selectedTab, favoritesOnly, likedIds]
   );
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
 
   const canCollapse =
     !forceExpanded &&
     selectedTab === "all" &&
-    !searchQuery.trim() &&
+    !normalizedQuery &&
     !favoritesOnly &&
     filteredItems.length > INITIAL_VISIBLE_COUNT;
 
@@ -118,14 +150,11 @@ export default function DailyCurationsSection({
           <div className="flex flex-wrap items-center gap-2">
             {filterTabs.map((tab) => {
               const active = selectedTab === tab.id;
-              const count =
-                tab.id === "all"
-                  ? dailyCurations.length
-                  : dailyCurations.filter((i) => i.category === tab.id).length;
               return (
                 <button
                   key={tab.id}
                   type="button"
+                  aria-pressed={active}
                   onClick={() => onSelectTab(tab.id)}
                   className={`inline-flex items-center gap-2 h-9 px-4 rounded-full text-xs font-medium border transition-all cursor-pointer ${
                     active
@@ -139,7 +168,7 @@ export default function DailyCurationsSection({
                       active ? "text-accent-light" : "text-muted"
                     }`}
                   >
-                    {tab.en} [{count}]
+                    {tab.en} [{tab.count}]
                   </span>
                 </button>
               );
@@ -149,11 +178,12 @@ export default function DailyCurationsSection({
 
         {/* Broadsheet Folio Grid */}
         {filteredItems.length === 0 ? (
-          <div className="py-14 text-center text-sm text-muted bg-surface rounded-2xl border border-border mt-8">
-            {favoritesOnly
-              ? "当前漫游志分栏中暂无已收藏的展品，点击卡片右上角「♡ 收藏」即可加入。"
-              : `暂无匹配“${searchQuery}”的每日漫游文献，请尝试切换上方分栏或清空检索词。`}
-          </div>
+          <EmptySectionState
+            favoritesOnly={favoritesOnly}
+            favoritesText="当前漫游志分栏中暂无已收藏的展品，点击卡片右上角「♡ 收藏」即可加入。"
+            emptyText={`暂无匹配“${searchQuery}”的每日漫游文献，请尝试切换上方分栏或清空检索词。`}
+            className="py-14 text-center text-sm text-muted bg-surface rounded-2xl border border-border mt-8"
+          />
         ) : (
           <>
             <div
@@ -206,21 +236,12 @@ export default function DailyCurationsSection({
                           </div>
 
                           <div className="relative z-10 flex items-center gap-2 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                onToggleLike?.(item.id);
-                              }}
-                              aria-pressed={isLiked}
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-mono-meta transition-colors cursor-pointer ${
-                                isLiked
-                                  ? "bg-accent text-white border-accent font-semibold"
-                                  : "bg-bg-light border-border text-secondary hover:text-dark hover:border-dark"
-                              }`}
-                              aria-label={`收藏 ${item.title}`}
-                            >
-                              <span>{isLiked ? "♥ 已收藏" : "♡ 收藏"}</span>
-                            </button>
+                            <BookmarkPillButton
+                              liked={isLiked}
+                              title={item.title}
+                              onToggle={() => onToggleLike?.(item.id)}
+                              variant="light"
+                            />
                             <a
                               href={item.href}
                               target="_blank"
@@ -280,28 +301,15 @@ export default function DailyCurationsSection({
                       {/* Tags & Archival Link Footer */}
                       <div className="flex items-center justify-between pt-3.5 mt-3 border-t border-border/75">
                         <div className="relative z-10 flex flex-wrap gap-1.5">
-                          {item.tags.map((tag) => {
-                            const isTagSelected =
-                              searchQuery.trim().toLowerCase() ===
-                              tag.toLowerCase();
-                            return (
-                              <button
-                                key={tag}
-                                type="button"
-                                onClick={() => {
-                                  if (!onSelectTag) return;
-                                  onSelectTag(tag);
-                                }}
-                                className={`text-[11px] font-mono-meta px-2 py-0.5 rounded transition-colors cursor-pointer ${
-                                  isTagSelected
-                                    ? "bg-dark text-surface"
-                                    : "bg-bg-card/85 text-secondary hover:bg-dark/15 hover:text-dark"
-                                }`}
-                              >
-                                #{tag}
-                              </button>
-                            );
-                          })}
+                          {item.tags.map((tag) => (
+                            <TagChipButton
+                              key={tag}
+                              tag={tag}
+                              selected={normalizedQuery === tag.toLowerCase()}
+                              onSelectTag={onSelectTag}
+                              variant="card"
+                            />
+                          ))}
                         </div>
                         <span className="text-[11px] font-mono-meta text-dark group-hover:text-accent transition-colors shrink-0 ml-2">
                           详情 →
@@ -314,21 +322,14 @@ export default function DailyCurationsSection({
             </div>
 
             {canCollapse && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setIsExpanded((prev) => !prev)}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-border bg-surface hover:border-dark hover:bg-dark hover:text-surface text-xs font-mono-meta text-dark transition-all cursor-pointer shadow-xs"
-                >
-                  <span>
-                    {isExpanded
-                      ? "收起部分漫游志 ↑"
-                      : `展开全部 ${filteredItems.length} 期漫游志 (还有 ${
-                          filteredItems.length - INITIAL_VISIBLE_COUNT
-                        } 期) ↓`}
-                  </span>
-                </button>
-              </div>
+              <SectionExpandToggle
+                expanded={isExpanded}
+                onToggle={() => setIsExpanded((prev) => !prev)}
+                collapseLabel="收起部分漫游志 ↑"
+                expandLabel={`展开全部 ${filteredItems.length} 期漫游志 (还有 ${
+                  filteredItems.length - INITIAL_VISIBLE_COUNT
+                } 期) ↓`}
+              />
             )}
           </>
         )}
