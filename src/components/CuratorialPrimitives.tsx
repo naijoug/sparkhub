@@ -90,7 +90,7 @@ export function TagChipButton({
       <button
         type="button"
         onClick={handleClick}
-        className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-white/10 text-white/75 hover:bg-white hover:text-[#141312] transition-colors cursor-pointer"
+        className="text-[10px] font-mono-meta px-2 py-0.5 rounded bg-white/10 text-white/75 hover:bg-white hover:text-darkroom transition-colors cursor-pointer"
       >
         #{tag}
       </button>

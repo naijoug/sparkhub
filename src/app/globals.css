@@ -54,6 +54,11 @@ html[data-theme="dark"] {
   --color-bg-light: var(--sh-bg-light);
   --color-bg-card: var(--sh-bg-card);
   --color-surface: var(--sh-surface);
+  --color-darkroom: #141312;
+  --color-darkroom-card: #1E1C1A;
+  --color-darkroom-deep: #0F0E0D;
+  --color-darkroom-fg: #F6F2E9;
+  --color-darkroom-blush: #F9EAE6;
   --font-sans: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", "Instrument Serif", "Cormorant Garamond", "Songti SC", "STSong", "Noto Serif SC", Georgia, serif;
   --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, SFMono-Regular, Menlo, monospace;

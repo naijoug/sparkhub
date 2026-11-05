@@ -9,6 +9,8 @@
  * - cross: 跨端硬件与空间计算 (visionOS / 桌面端 / 物联网与机器人)
  */
 
+import { CURATORIAL_GRADIENTS, CuratorialGradient } from "./palettes";
+
 export type PlatformCategory = "all" | "app" | "web" | "ai" | "cross";
 
 export interface PlatformFilterItem {
@@ -41,7 +43,7 @@ export interface HackathonProduct {
   officialUrl: string;
   githubUrl?: string;
   curatorCritique: string;
-  coverGradient: string;
+  coverGradient: CuratorialGradient;
 }
 
 export interface HackathonEdition {
@@ -121,7 +123,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/jonathanouyang/jayu",
         curatorCritique:
           "评审团评价其为‘计算机操控领域的惊鸿一瞥’。它不仅展示了 Gemini 1.5 极高精度的视觉空间推理，更为通用人工智能（AGI）在桌面操作系统上的落地树立了黄金标杆。",
-        coverGradient: "from-[#C8432B] via-[#9E2E1D] to-[#1D1210]",
+        coverGradient: CURATORIAL_GRADIENTS[0],
       },
       {
         id: "gaze-link-als",
@@ -154,7 +156,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/gazelink/gaze-link-android",
         curatorCritique:
           "科技向善的极致典范。它证明了将轻量级端侧视觉检测与云端超强大脑模型结合，能够产生多么震撼人心的社会价值。",
-        coverGradient: "from-[#194434] via-[#245E47] to-[#0D1E17]",
+        coverGradient: CURATORIAL_GRADIENTS[2],
       },
       {
         id: "viddyscribe-web",
@@ -187,7 +189,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/viddyscribe/extension",
         curatorCritique:
           "巧妙运用了视音频时间轴上的空隙插值哲学，把原本冷冰冰的无障碍改造变成了如同时光流转般丝滑的视听享受。",
-        coverGradient: "from-[#332B66] via-[#4A3BC2] to-[#141222]",
+        coverGradient: CURATORIAL_GRADIENTS[1],
       },
     ],
   },
@@ -246,7 +248,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/daogenie/daogenie-agent",
         curatorCritique:
           "将政治学协商机制与加密经济原语完美交织，展现了 AI Agent 如何从单纯聊天机器人演进为掌管千万美元金库的数字理性法官。",
-        coverGradient: "from-[#5E2E50] via-[#8F3D64] to-[#1E111B]",
+        coverGradient: CURATORIAL_GRADIENTS[3],
       },
       {
         id: "ethpark-qr-mobile",
@@ -279,7 +281,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/ethpark-qr/mobile-app",
         curatorCritique:
           "真正解决真实世界物理痛点的教科书级产品。没有虚浮的概念炒作，只有在曼谷街头实测一枪过验的落地快感。",
-        coverGradient: "from-[#A66C14] via-[#C8432B] to-[#21170F]",
+        coverGradient: CURATORIAL_GRADIENTS[4],
       },
       {
         id: "minidao-telegram",
@@ -311,7 +313,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/minidao-tg/telegram-bot",
         curatorCritique:
           "把区块链技术隐藏在几十亿人最习惯的即时通讯窗口背后，是 Web3 走向十亿大众的最佳 UI 范式。",
-        coverGradient: "from-[#1B455C] via-[#2A6888] to-[#0E1E28]",
+        coverGradient: CURATORIAL_GRADIENTS[5],
       },
     ],
   },
@@ -363,7 +365,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/harding/ore",
         curatorCritique:
           "它不仅是一段精巧的高性能智能合约代码，更是向数字货币最初愿景发起的一记浪漫诗篇。在浏览器点开它的一瞬间，极客时代的自由脉搏再次跳动。",
-        coverGradient: "from-[#8A4E16] via-[#BA6B22] to-[#1F150C]",
+        coverGradient: CURATORIAL_GRADIENTS[9],
       },
       {
         id: "banger-lol-creator",
@@ -390,7 +392,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/banger-lol/core",
         curatorCritique:
           "将 meme 文化、社群认同与金融工程巧妙融合的消费级交互典范，界面排版张力十足，动效极为流畅。",
-        coverGradient: "from-[#7D2630] via-[#B5402A] to-[#1A1012]",
+        coverGradient: CURATORIAL_GRADIENTS[6],
       },
       {
         id: "meshmap-city-champ",
@@ -423,7 +425,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/meshmap/city-champ-app",
         curatorCritique:
           "将原本枯燥的基础设施空间扫描工作，转化成了让人忍不住穿上球鞋走遍城市每个角落的快乐游戏探索。",
-        coverGradient: "from-[#1E365E] via-[#35578F] to-[#101828]",
+        coverGradient: CURATORIAL_GRADIENTS[10],
       },
     ],
   },
@@ -482,7 +484,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/good-samaritan-vision/app",
         curatorCritique:
           "在虚实交融的微光中挽救生命。它向全世界展示了空间计算绝不仅仅是用来在客厅看电影的玩具，而是能将专业医学技能瞬间赋予每一个普通人的普惠之光。",
-        coverGradient: "from-[#C8432B] via-[#9E2E1D] to-[#1D1210]",
+        coverGradient: CURATORIAL_GRADIENTS[0],
       },
       {
         id: "skysplat-gaussian-drones",
@@ -515,7 +517,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/skysplat/skysplat-engine",
         curatorCritique:
           "计算机图形学顶级学术成果与极端工程场景的硬核碰撞，把原本需要渲染数小时的实验室技术直接变成了抢险前线挽救生命的战术地图。",
-        coverGradient: "from-[#194434] via-[#245E47] to-[#0D1E17]",
+        coverGradient: CURATORIAL_GRADIENTS[2],
       },
       {
         id: "coderepair-autonomous",
@@ -548,7 +550,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/coderepair-ai/agent",
         curatorCritique:
           "这是 AI 编程助手从‘代码自动补全’跃迁至‘真正工程同行’的关键里程碑，展现了极其成熟的编译与调试底层理解力。",
-        coverGradient: "from-[#332B66] via-[#4A3BC2] to-[#141222]",
+        coverGradient: CURATORIAL_GRADIENTS[1],
       },
     ],
   },
@@ -606,7 +608,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/signalseal/audit-seal",
         curatorCritique:
           "切中了大模型落地工业界最痛的一根神经。它不再沉迷于炫技‘模型能写多少行代码’，而是冷静严肃地回答‘我们如何百分之百信任这段代码’。",
-        coverGradient: "from-[#662B50] via-[#944073] to-[#1F101A]",
+        coverGradient: CURATORIAL_GRADIENTS[11],
       },
       {
         id: "scribemind-canvas",
@@ -639,7 +641,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/scribemind/canvas",
         curatorCritique:
           "无限画布排版极其优美，动画极其克制从容，将无形的语言交流转译为有形的空间拓扑，是交互设计艺术与认知心理学的完美联姻。",
-        coverGradient: "from-[#2F522F] via-[#497A49] to-[#111D11]",
+        coverGradient: CURATORIAL_GRADIENTS[12],
       },
     ],
   },
@@ -697,7 +699,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/pocketchef-ai/ios-app",
         curatorCritique:
           "极佳的 iOS 原生体验。巧妙利用了 Dynamic Island（灵动岛）和实时活动来展示烹饪倒计时，把技术温柔地藏在了美食的香气与烟火气背后。",
-        coverGradient: "from-[#A66C14] via-[#C8432B] to-[#21170F]",
+        coverGradient: CURATORIAL_GRADIENTS[4],
       },
       {
         id: "subtlenote-offline-journal",
@@ -729,7 +731,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/subtlenote/local-first-note",
         curatorCritique:
           "在云端工具泛滥且侵犯隐私的喧嚣时代，以沉静克制的设计语言重拾了人与自己思想对话的宁静时刻，质感极其温润。",
-        coverGradient: "from-[#1B4A52] via-[#2A727D] to-[#0E1F23]",
+        coverGradient: CURATORIAL_GRADIENTS[13],
       },
     ],
   },
@@ -787,7 +789,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/pianoverse/visionos-app",
         curatorCritique:
           "当第一个音符伴随着指尖落下、空间粒子在真实木质琴盖上泛起涟漪时，全场评委起立鼓掌。这是物理现实与数字梦境最优雅的交响曲。",
-        coverGradient: "from-[#332B66] via-[#4A3BC2] to-[#141222]",
+        coverGradient: CURATORIAL_GRADIENTS[1],
       },
       {
         id: "cellsculpt-spatial-bio",
@@ -820,7 +822,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/cellsculpt/cellsculpt-vision",
         curatorCritique:
           "让深奥晦涩的分子生物学化作触手可及的宏伟建筑。它彻底重新定义了科学研究者观察自然真理的维度与范式。",
-        coverGradient: "from-[#194434] via-[#245E47] to-[#0D1E17]",
+        coverGradient: CURATORIAL_GRADIENTS[2],
       },
     ],
   },
@@ -878,7 +880,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/artifactsflow/builder",
         curatorCritique:
           "打通了生成式 AI 与可交付软件之间的‘最后一公里’。让任何一个充满创意的普通人真正体会到了从灵感到上线只需 60 秒的造物快感。",
-        coverGradient: "from-[#1E365E] via-[#35578F] to-[#101828]",
+        coverGradient: CURATORIAL_GRADIENTS[10],
       },
       {
         id: "legaleagle-contract-arena",
@@ -911,7 +913,7 @@ export const hackathonEditions: HackathonEdition[] = [
         githubUrl: "https://github.com/legaleagle-ai/contract-analyzer",
         curatorCritique:
           "不仅展示了极其深厚的法律知识图谱理解，更将长文本大模型的能力从‘摘要阅读’升华到了‘战略博弈辅助’的高维境界。",
-        coverGradient: "from-[#5E2E50] via-[#8F3D64] to-[#1E111B]",
+        coverGradient: CURATORIAL_GRADIENTS[3],
       },
     ],
   },

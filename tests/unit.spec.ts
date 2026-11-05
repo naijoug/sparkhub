@@ -31,8 +31,18 @@ import {
   hackathonProductToDossier,
   pickRandomDossier,
 } from "@/lib/dossier";
+import { validateCuratorialCatalog } from "@/lib/catalog-schema";
+import {
+  CURATORIAL_GRADIENTS,
+  VALID_CURATORIAL_GRADIENTS,
+} from "@/lib/palettes";
 
 test.describe("Catalog & Folio unit tests", () => {
+  test("validateCuratorialCatalog passes all schema, gradient, URL, and referential integrity checks", () => {
+    expect(VALID_CURATORIAL_GRADIENTS.size).toBe(CURATORIAL_GRADIENTS.length);
+    expect(validateCuratorialCatalog()).toEqual([]);
+  });
+
   test("VALID_FOLIO_IDS matches the exact set of unique catalog IDs across all 5 wings", () => {
     const catalogIds = [
       ...featuredCards.map((c) => c.id),

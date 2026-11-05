@@ -45,7 +45,7 @@ export default function AIContestSection({
   return (
     <section
       id="ai-contests"
-      className="relative overflow-hidden bg-[#141312] text-[#F6F2E9] px-6 lg:px-12 py-20 border-b border-white/10"
+      className="relative overflow-hidden bg-darkroom text-darkroom-fg px-6 lg:px-12 py-20 border-b border-white/10"
     >
       {/* Subtle museum dark-room ambient light */}
       <div className="pointer-events-none absolute -top-24 left-1/4 w-96 h-96 rounded-full bg-accent/15 blur-3xl" />
@@ -55,12 +55,12 @@ export default function AIContestSection({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 mb-10 border-b border-white/15">
           <div className="space-y-2.5">
             <div className="flex items-center gap-3 text-[11px] font-mono-meta uppercase text-white/60">
-              <span className="px-2.5 py-0.5 rounded bg-white/10 border border-white/20 text-[#F6F2E9] font-semibold">
+              <span className="px-2.5 py-0.5 rounded bg-white/10 border border-white/20 text-darkroom-fg font-semibold">
                 WING IV · 暗房特展
               </span>
               <span>GENERATIVE SYMPOSIUM · 算法与合成美学</span>
             </div>
-            <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-[#F6F2E9]">
+            <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-darkroom-fg">
               AI 大赛佳作 ·{" "}
               <span className="italic font-normal text-white/65">
                 Latent Space Synthesis
@@ -71,7 +71,7 @@ export default function AIContestSection({
             href="https://www.producthunt.com/categories/ai-designer"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-mono-meta uppercase text-[#F9EAE6] hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-mono-meta uppercase text-darkroom-blush hover:text-white transition-colors"
           >
             <span>EXPLORE GENERATIVE ATELIER · 探索更多生成式工具</span>
             <span>↗</span>
@@ -97,7 +97,7 @@ export default function AIContestSection({
               return (
                 <article
                   key={card.id}
-                  className="group relative flex flex-col bg-[#1E1C1A] rounded-2xl overflow-hidden border border-white/12 hover:border-white/35 shadow-[0_8px_28px_rgba(0,0,0,0.35)] hover:-translate-y-1 transition-all duration-300 text-left"
+                  className="group relative flex flex-col bg-darkroom-card rounded-2xl overflow-hidden border border-white/12 hover:border-white/35 shadow-[0_8px_28px_rgba(0,0,0,0.35)] hover:-translate-y-1 transition-all duration-300 text-left"
                 >
                   {/* Luminous Latent-Space Plate */}
                   <div
@@ -162,7 +162,7 @@ export default function AIContestSection({
 
                   {/* Dark Gallery Placard Content */}
                   <div className="flex flex-col gap-2.5 p-5 flex-1">
-                    <h3 className="font-editorial text-lg font-bold text-[#F6F2E9] group-hover:text-[#F9EAE6] transition-colors leading-snug">
+                    <h3 className="font-editorial text-lg font-bold text-darkroom-fg group-hover:text-darkroom-blush transition-colors leading-snug">
                       <button
                         type="button"
                         onClick={() => onInspectDossier?.(card)}

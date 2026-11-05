@@ -162,11 +162,11 @@ export default function Hero({
               </div>
 
               {/* Dark Obsidian Art Canvas */}
-              <div className="relative h-[280px] sm:h-[300px] rounded-2xl overflow-hidden bg-[#121110] flex items-center justify-center p-6 border border-dark">
+              <div className="relative h-[280px] sm:h-[300px] rounded-2xl overflow-hidden bg-darkroom flex items-center justify-center p-6 border border-dark">
                 {/* Ambient museum spotlight glows */}
-                <div className="absolute -top-12 -left-10 w-52 h-52 rounded-full bg-[#C8432B]/75 mix-blend-screen blur-2xl group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute -bottom-16 right-2 w-60 h-60 rounded-full bg-[#4A3BC2]/70 mix-blend-screen blur-2xl group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute top-1/4 right-1/4 w-36 h-36 rounded-full bg-[#B87B18]/65 mix-blend-screen blur-xl" />
+                <div className="absolute -top-12 -left-10 w-52 h-52 rounded-full bg-accent/75 mix-blend-screen blur-2xl group-hover:scale-110 transition-transform duration-700" />
+                <div className="absolute -bottom-16 right-2 w-60 h-60 rounded-full bg-purple/70 mix-blend-screen blur-2xl group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute top-1/4 right-1/4 w-36 h-36 rounded-full bg-yellow/65 mix-blend-screen blur-xl" />
 
                 {/* Corner registration crosshairs */}
                 <span className="absolute top-3 left-3.5 text-[10px] font-mono-meta text-white/40">+</span>

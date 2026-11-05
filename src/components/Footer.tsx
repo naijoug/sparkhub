@@ -2,7 +2,7 @@ import { footerLinks } from "@/lib/data";
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-[#0F0E0D] text-surface px-6 lg:px-12 pt-16 pb-12">
+    <footer className="relative overflow-hidden bg-darkroom-deep text-surface px-6 lg:px-12 pt-16 pb-12">
       <div className="max-w-[1440px] mx-auto space-y-14">
         <div className="flex flex-col lg:flex-row justify-between gap-12 pb-12 border-b border-white/10">
           {/* Left: Colophon & Curatorial Imprint */}

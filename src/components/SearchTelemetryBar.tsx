@@ -19,51 +19,51 @@ export default function SearchTelemetryBar({
     <div
       role="status"
       aria-live="polite"
-      className="bg-[#181615] text-[#F6F2E9] border-b border-border px-6 lg:px-12 py-3"
+      className="bg-darkroom text-darkroom-fg border-b border-border px-6 lg:px-12 py-3"
     >
       <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs font-mono-meta">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 text-[#F9EAE6]">
+          <span className="inline-flex items-center gap-1.5 text-darkroom-blush">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
             <span>ARCHIVE FILTER ACTIVE</span>
           </span>
           <span className="text-white/40">|</span>
           <span>
             关键词 “<strong className="text-white">{searchQuery}</strong>” 共命中{" "}
-            <strong className="text-[#F9EAE6]">{stats.total}</strong> 项馆藏：
+            <strong className="text-darkroom-blush">{stats.total}</strong> 项馆藏：
           </span>
           <a
             href="#daily-curations"
             onClick={() => onNavigateSection("daily-curations")}
-            className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
+            className="hover:text-darkroom-blush transition-colors underline underline-offset-4"
           >
             漫游志 [{stats.dailyCount}]
           </a>
           <a
             href="#featured"
             onClick={() => onNavigateSection("featured")}
-            className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
+            className="hover:text-darkroom-blush transition-colors underline underline-offset-4"
           >
             常设展 [{stats.featuredCount}]
           </a>
           <a
             href="#hackathons"
             onClick={() => onNavigateSection("hackathons")}
-            className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
+            className="hover:text-darkroom-blush transition-colors underline underline-offset-4"
           >
             黑客松 [{stats.hackathonCount}]
           </a>
           <a
             href="#ai-contests"
             onClick={() => onNavigateSection("ai-contests")}
-            className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
+            className="hover:text-darkroom-blush transition-colors underline underline-offset-4"
           >
             AI 特展 [{stats.aiCount}]
           </a>
           <a
             href="#sources"
             onClick={() => onNavigateSection("sources")}
-            className="hover:text-[#F9EAE6] transition-colors underline underline-offset-4"
+            className="hover:text-darkroom-blush transition-colors underline underline-offset-4"
           >
             信源图谱 [{stats.sourceCount}]
           </a>

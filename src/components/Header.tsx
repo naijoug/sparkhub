@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
 
 const navItems = [
@@ -63,6 +63,25 @@ export default function Header({
 }: HeaderProps) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [activeSection, setActiveSection] = useState("top");
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    const updateHeight = () => {
+      document.documentElement.style.setProperty(
+        "--sh-header-h",
+        `${el.offsetHeight}px`
+      );
+    };
+    updateHeight();
+
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(updateHeight);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     const elements = navItems
@@ -91,7 +110,10 @@ export default function Header({
   }, [activeWing]);
 
   return (
-    <header className="sticky top-0 z-50 bg-bg-light/92 backdrop-blur-md border-b border-border">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 bg-bg-light/92 backdrop-blur-md border-b border-border"
+    >
       {/* Top Archival Colophon Ribbon */}
       <div className="hidden sm:flex items-center justify-between px-6 lg:px-12 h-8 border-b border-border/75 text-[10px] font-mono-meta text-muted bg-bg-card/65">
         <div className="flex items-center gap-4">
