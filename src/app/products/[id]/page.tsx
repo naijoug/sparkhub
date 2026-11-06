@@ -7,6 +7,11 @@ import {
   getHackathonById,
 } from "@/lib/hackathons";
 import { getProductDetailById } from "@/lib/hackathon-details";
+import {
+  buildCanonicalUrl,
+  buildProductJsonLd,
+  SITE_NAME,
+} from "@/lib/seo";
 import Footer from "@/components/Footer";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
 import ProductBookmarkButton, {
@@ -31,9 +36,34 @@ export async function generateMetadata({
     };
   }
 
+  const pageTitle = `${product.title} — ${product.tagline} | SparkHub 黑客松馆藏详情`;
+  const canonicalUrl = buildCanonicalUrl(`/products/${product.id}`);
+
   return {
-    title: `${product.title} — ${product.tagline} | SparkHub 黑客松馆藏详情`,
+    title: pageTitle,
     description: product.summary,
+    keywords: [
+      product.title,
+      product.hackathonName,
+      product.targetPlatform,
+      ...product.techStack,
+    ],
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      type: "article",
+      locale: "zh_CN",
+      url: canonicalUrl,
+      siteName: SITE_NAME,
+      title: pageTitle,
+      description: product.summary,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: pageTitle,
+      description: product.summary,
+    },
   };
 }
 
@@ -74,9 +104,14 @@ export default async function ProductDetailPage({
     label: product.platformCategory,
     colorClass: "bg-surface text-secondary border-border",
   };
+  const jsonLd = buildProductJsonLd(product);
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-light text-dark">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-50 bg-bg-light/92 backdrop-blur-md border-b border-border">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">

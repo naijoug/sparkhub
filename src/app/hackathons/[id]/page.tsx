@@ -5,6 +5,11 @@ import {
   hackathonEditions,
   getHackathonById,
 } from "@/lib/hackathons";
+import {
+  buildCanonicalUrl,
+  buildHackathonJsonLd,
+  SITE_NAME,
+} from "@/lib/seo";
 import Footer from "@/components/Footer";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
 import ProductBookmarkButton, {
@@ -29,9 +34,36 @@ export async function generateMetadata({
     };
   }
 
+  const pageTitle = `${hackathon.name} (${hackathon.dateDisplay}) — 高票造物展录 | SparkHub`;
+  const canonicalUrl = buildCanonicalUrl(`/hackathons/${hackathon.id}`);
+
   return {
-    title: `${hackathon.name} (${hackathon.dateDisplay}) — 高票造物展录 | SparkHub`,
+    title: pageTitle,
     description: hackathon.description,
+    keywords: [
+      hackathon.name,
+      hackathon.englishName,
+      hackathon.organizer,
+      hackathon.edition,
+      "Hackathon",
+      "黑客松",
+    ],
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      type: "website",
+      locale: "zh_CN",
+      url: canonicalUrl,
+      siteName: SITE_NAME,
+      title: pageTitle,
+      description: hackathon.description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: pageTitle,
+      description: hackathon.description,
+    },
   };
 }
 
@@ -47,8 +79,14 @@ export default async function HackathonEditionPage({
     notFound();
   }
 
+  const jsonLd = buildHackathonJsonLd(hackathon);
+
   return (
     <div className="min-h-screen flex flex-col bg-bg-light text-dark">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Top Header */}
       <header className="sticky top-0 z-50 bg-bg-light/92 backdrop-blur-md border-b border-border">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">

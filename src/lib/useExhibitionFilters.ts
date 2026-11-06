@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { CurationCategory } from "./data";
 import { PlatformCategory } from "./hackathons";
 import {
@@ -93,7 +100,8 @@ export function useExhibitionFilters(likedIds: string[]) {
     sourceSection,
   ]);
 
-  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+  const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
 
   const searchStats = useMemo<SearchTelemetryStats | null>(() => {
     if (!normalizedQuery) return null;
@@ -184,6 +192,7 @@ export function useExhibitionFilters(likedIds: string[]) {
     sourceSection,
     setSourceSection,
     searchQuery,
+    deferredSearchQuery,
     setSearchQuery,
     activeWing,
     setActiveWing,

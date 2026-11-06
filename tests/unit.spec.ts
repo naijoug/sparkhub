@@ -4,7 +4,8 @@ import {
   dailyCurations,
   featuredCards,
 } from "@/lib/data";
-import { allHackathonProducts } from "@/lib/hackathons";
+import { allHackathonProducts, hackathonEditions } from "@/lib/hackathons";
+import { getProductDetailById } from "@/lib/hackathon-details";
 import { inspirationSources } from "@/lib/sources";
 import {
   filterAIContestCards,
@@ -36,6 +37,15 @@ import {
   CURATORIAL_GRADIENTS,
   VALID_CURATORIAL_GRADIENTS,
 } from "@/lib/palettes";
+import {
+  buildCanonicalUrl,
+  buildHackathonJsonLd,
+  buildProductJsonLd,
+  buildWebsiteJsonLd,
+  SITE_URL,
+} from "@/lib/seo";
+import sitemap from "@/app/sitemap";
+import robots from "@/app/robots";
 
 test.describe("Catalog & Folio unit tests", () => {
   test("validateCuratorialCatalog passes all schema, gradient, URL, and referential integrity checks", () => {
@@ -206,5 +216,49 @@ test.describe("Dossier adapter unit tests", () => {
 
     const last = pickRandomDossier(() => 0.999999);
     expect(last.id).toBe(aiContestCards[aiContestCards.length - 1].id);
+  });
+});
+
+test.describe("SEO, Sitemap, Robots & JSON-LD unit tests", () => {
+  test("buildCanonicalUrl normalizes paths and preserves SITE_URL prefix", () => {
+    expect(buildCanonicalUrl("/")).toBe(`${SITE_URL}/`);
+    expect(buildCanonicalUrl("/products/jayu-ai-assistant")).toBe(
+      `${SITE_URL}/products/jayu-ai-assistant`
+    );
+    expect(buildCanonicalUrl("hackathons/ethglobal-bangkok-2024")).toBe(
+      `${SITE_URL}/hackathons/ethglobal-bangkok-2024`
+    );
+  });
+
+  test("sitemap() and robots() include all static routes and canonical sitemap reference", () => {
+    const entries = sitemap();
+    expect(entries).toHaveLength(
+      1 + hackathonEditions.length + allHackathonProducts.length
+    );
+    expect(entries[0].url).toBe(`${SITE_URL}/`);
+
+    const r = robots();
+    expect(r.sitemap).toBe(`${SITE_URL}/sitemap.xml`);
+    expect(r.host).toBe(SITE_URL);
+  });
+
+  test("JSON-LD builders produce valid schema.org objects for home, product, and hackathon pages", () => {
+    const webJsonLd = buildWebsiteJsonLd();
+    expect(webJsonLd["@type"]).toBe("WebSite");
+    expect(webJsonLd.url).toBe(`${SITE_URL}/`);
+
+    const detail = getProductDetailById(allHackathonProducts[0].id);
+    expect(detail).toBeDefined();
+    const productJsonLd = buildProductJsonLd(detail!);
+    expect(productJsonLd["@type"]).toBe("SoftwareApplication");
+    expect(productJsonLd.url).toBe(
+      `${SITE_URL}/products/${allHackathonProducts[0].id}`
+    );
+
+    const hackathonJsonLd = buildHackathonJsonLd(hackathonEditions[0]);
+    expect(hackathonJsonLd["@type"]).toBe("CollectionPage");
+    expect(hackathonJsonLd.hasPart).toHaveLength(
+      hackathonEditions[0].products.length
+    );
   });
 });

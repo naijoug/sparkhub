@@ -1,10 +1,53 @@
 import type { Metadata } from "next";
+import {
+  buildCanonicalUrl,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+} from "@/lib/seo";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SparkHub — 数字艺术与灵感策展志 | 发现灵感，创造不凡",
-  description:
-    "汇集全球优秀设计、黑客松作品、AI 大赛佳作与每日新锐产品、创意活动及灵感网站的策展平台",
+  metadataBase: new URL(`${SITE_URL}/`),
+  title: {
+    default: SITE_TITLE,
+    template: "%s",
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "SparkHub",
+    "数字艺术",
+    "灵感策展",
+    "黑客松",
+    "Hackathon",
+    "设计工程",
+    "Design Engineering",
+    "生成式艺术",
+    "AI 大赛",
+    "灵感信源",
+  ],
+  alternates: {
+    canonical: buildCanonicalUrl("/"),
+  },
+  openGraph: {
+    type: "website",
+    locale: "zh_CN",
+    url: buildCanonicalUrl("/"),
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 const THEME_INIT_SCRIPT = `

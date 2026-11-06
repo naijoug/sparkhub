@@ -57,6 +57,7 @@ export default function ExhibitionClient({
     sourceSection,
     setSourceSection,
     searchQuery,
+    deferredSearchQuery,
     setSearchQuery,
     activeWing,
     setActiveWing,
@@ -96,7 +97,7 @@ export default function ExhibitionClient({
 
         {searchStats && (
           <SearchTelemetryBar
-            searchQuery={searchQuery}
+            searchQuery={deferredSearchQuery}
             stats={searchStats}
             onNavigateSection={handleHeaderNavigate}
             onResetSearch={() => setSearchQuery("")}
@@ -107,7 +108,7 @@ export default function ExhibitionClient({
           <DailyCurationsSection
             selectedTab={dailyCategory}
             onSelectTab={setDailyCategory}
-            searchQuery={searchQuery}
+            searchQuery={deferredSearchQuery}
             onSelectTag={handleToggleTag}
             likedIds={likedIds}
             onToggleLike={handleToggleLike}
@@ -125,14 +126,14 @@ export default function ExhibitionClient({
             <CategoryBar
               activeCategory={activeCategory}
               onSelectCategory={setActiveCategory}
-              searchQuery={searchQuery}
+              searchQuery={deferredSearchQuery}
               favoritesOnly={favoritesOnly}
               likedIds={likedIds}
             />
 
             <FeaturedSection
               activeCategory={activeCategory}
-              searchQuery={searchQuery}
+              searchQuery={deferredSearchQuery}
               onSelectTag={handleToggleTag}
               likedIds={likedIds}
               onToggleLike={handleToggleLike}
@@ -147,7 +148,7 @@ export default function ExhibitionClient({
           <HackathonSection
             selectedPlatform={hackathonPlatform}
             onSelectPlatform={setHackathonPlatform}
-            searchQuery={searchQuery}
+            searchQuery={deferredSearchQuery}
             onSelectTag={handleToggleTag}
             likedIds={likedIds}
             onToggleLike={handleToggleLike}
@@ -162,7 +163,7 @@ export default function ExhibitionClient({
 
         {(activeWing === "all" || activeWing === "ai-contests") && (
           <AIContestSection
-            searchQuery={searchQuery}
+            searchQuery={deferredSearchQuery}
             onSelectTag={handleToggleTag}
             likedIds={likedIds}
             onToggleLike={handleToggleLike}
@@ -178,7 +179,7 @@ export default function ExhibitionClient({
           <SourceAtlasSection
             selectedSection={sourceSection}
             onSelectSection={setSourceSection}
-            searchQuery={searchQuery}
+            searchQuery={deferredSearchQuery}
             onSelectTag={handleToggleTag}
             likedIds={likedIds}
             onToggleLike={handleToggleLike}
